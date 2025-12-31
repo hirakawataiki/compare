@@ -1,0 +1,944 @@
+<!doctype html>
+<html lang="ja">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Conversation Support System (UI)</title>
+  <style>
+    body { font-family: system-ui, -apple-system, "Segoe UI", Roboto, "Noto Sans JP", sans-serif; margin: 20px; background:#f6f7fb; }
+    h1 { font-size: 22px; margin: 0 0 12px; }
+    .row { display:flex; gap:10px; flex-wrap: wrap; align-items:center; margin: 10px 0; }
+    button { padding: 8px 12px; border-radius: 10px; border: 1px solid #d9dbe6; background:#fff; cursor:pointer; }
+    button:disabled { opacity: .5; cursor:not-allowed; }
+    .pill { padding: 6px 10px; border-radius: 999px; background:#fff; border:1px solid #d9dbe6; }
+    .pillDot { display:inline-block; width:10px; height:10px; border-radius:999px; margin-right:6px; vertical-align:middle; background:#bbb; }
+    .ok { background:#27ae60; }
+    .ng { background:#e74c3c; }
+    .card { background:#fff; border:1px solid #e3e5f0; border-radius: 14px; padding: 14px; box-shadow: 0 1px 8px rgba(0,0,0,.04); margin: 12px 0; }
+    textarea { width: 100%; min-height: 110px; border-radius: 12px; border:1px solid #d9dbe6; padding: 10px; resize: vertical; }
+    .topics { display:flex; gap: 8px; flex-wrap: wrap; }
+    .topicBtn { border-radius: 999px; border: 1px solid rgba(0,0,0,.08); padding: 8px 12px; cursor:pointer; }
+    .small { font-size: 12px; color:#666; }
+    .log { width:100%; min-height: 140px; border-radius: 12px; border:1px solid #d9dbe6; padding: 10px; background:#fbfbfe; white-space: pre-wrap; overflow:auto; }
+    .seg { display:flex; gap:10px; flex-wrap: wrap; }
+    .seg button { width: 44px; height: 36px; border-radius: 999px; }
+    .timelineWrap { display:flex; flex-direction:column; gap:8px; }
+    .timeline { position: relative; width:100%; height: 18px; border-radius: 999px; border:1px solid #d9dbe6; background: #fff; display:flex; overflow:hidden; }
+    .timelineSeg { height: 100%; }
+    .legend { display:flex; gap:12px; flex-wrap:wrap; align-items:center; }
+    .legendItem { display:flex; gap:6px; align-items:center; }
+    .legendSwatch { width:14px; height:14px; border-radius:4px; border:1px solid rgba(0,0,0,.1); }
+    .segmentList { display:flex; flex-direction:column; gap:6px; }
+    .segmentRow { display:flex; gap:8px; align-items:center; font-size: 12px; color:#444; }
+    .badge { padding:2px 6px; border-radius:6px; font-size:11px; border:1px solid rgba(0,0,0,.12); }
+  </style>
+</head>
+<body>
+  <h1>Conversation Support System (UI)</h1>
+
+  <div class="row">
+    <button id="btnConnect">Connect</button>
+    <button id="btnStart">音声認識スタート</button>
+    <button id="btnStop" disabled>停止</button>
+    <button id="btnTick">Tick</button>
+    <div class="pill">
+      <span class="pillDot ng" id="wsDot"></span>
+      <span id="wsStatus">closed</span>
+    </div>
+  </div>
+
+  <div class="card">
+    <div style="font-weight:700;margin-bottom:6px;">音声認識テキスト（Web Speech API）</div>
+    <textarea id="speechArea" placeholder="ここに認識テキストが入ります"></textarea>
+    <div class="small" style="margin-top:6px;">話題抽出は「確定テキスト（final）」を差分で送ります（頻度も抑えます）。</div>
+  </div>
+
+  <div class="card">
+    <div style="display:flex; gap:16px; align-items:baseline; flex-wrap:wrap;">
+      <div style="font-weight:700;">① 話題（ストリーミング抽出）</div>
+      <div class="small">クリックで選択 → ②質問文</div>
+    </div>
+    <div class="topics" id="topics" style="margin-top:10px;"></div>
+  </div>
+
+  <div class="card">
+    <div style="display:flex; gap:10px; align-items:baseline; flex-wrap:wrap;">
+      <div style="font-weight:700;">② 質問文</div>
+      <div class="small" id="currentTopic">（話題をクリックすると生成します）</div>
+    </div>
+    <div id="questions" style="margin-top:10px;"></div>
+  </div>
+
+  <div class="card">
+    <div style="display:flex; gap:10px; align-items:baseline; flex-wrap:wrap;">
+      <div style="font-weight:700;">③ 盛り上がり度（話題ごとに色で強調）</div>
+    </div>
+    <div class="seg" style="margin-top:10px;">
+      <button id="btnHigh"  title="高">高</button>
+      <button id="btnMid"   title="中">中</button>
+      <button id="btnLow"   title="低">低</button>
+      <div class="small" style="align-self:center;">
+        ※ 話題が1つ追加された瞬間に、その区間の平均スコアを1回だけ自動割り当てします（色は更新しません）。
+      </div>
+    </div>
+  </div>
+
+  <div class="card">
+    <div style="font-weight:700;">話者分析（交代回数・現在話者）</div>
+    <div class="row" style="margin-top:8px;">
+      <div class="pill">交替数(合計): <span id="turnTotal">0</span></div>
+      <div class="pill">このチャンク: <span id="turnChunk">0</span></div>
+      <div class="pill">現在話者: <span id="currentSpeaker">-</span></div>
+    </div>
+    <div class="log" id="speakerMetricsLog"></div>
+  </div>
+
+  <div class="card">
+    <div style="font-weight:700;margin-bottom:6px;">リアル音声（/voice_features）ログ（3秒ごと）</div>
+    <div class="log" id="voiceLog"></div>
+  </div>
+
+  <div class="card">
+    <div style="font-weight:700;margin-bottom:6px;">話者分離ログ（/ws_diarize）</div>
+    <div class="log" id="diarizeLog"></div>
+  </div>
+
+  <div class="card">
+    <div style="font-weight:700;margin-bottom:6px;">ログ</div>
+    <div class="log" id="log"></div>
+  </div>
+
+<script>
+(() => {
+  const API_BASE = location.origin;
+
+  const logBox = document.getElementById('log');
+  const voiceLogBox = document.getElementById('voiceLog');
+  const diarizeLogBox = document.getElementById('diarizeLog');
+  const speakerMetricsLogBox = document.getElementById('speakerMetricsLog');
+  const turnTotalEl = document.getElementById('turnTotal');
+  const turnChunkEl = document.getElementById('turnChunk');
+  const currentSpeakerEl = document.getElementById('currentSpeaker');
+  const wsDot = document.getElementById('wsDot');
+  const wsStatus = document.getElementById('wsStatus');
+
+  const btnConnect = document.getElementById('btnConnect');
+  const btnStart = document.getElementById('btnStart');
+  const btnStop = document.getElementById('btnStop');
+  const btnTick = document.getElementById('btnTick');
+
+  const speechArea = document.getElementById('speechArea');
+
+  const btnHigh = document.getElementById('btnHigh');
+  const btnMid  = document.getElementById('btnMid');
+  const btnLow  = document.getElementById('btnLow');
+
+  function log(msg) {
+    logBox.textContent += (msg + "\n");
+    logBox.scrollTop = logBox.scrollHeight;
+  }
+  function logVoice(msg) {
+    voiceLogBox.textContent += (msg + "\n");
+    voiceLogBox.scrollTop = voiceLogBox.scrollHeight;
+  }
+  function logDiarize(msg) {
+    diarizeLogBox.textContent += (msg + "\n");
+    diarizeLogBox.scrollTop = diarizeLogBox.scrollHeight;
+  }
+  function logMetrics(msg) {
+    speakerMetricsLogBox.textContent += (msg + "\n");
+    speakerMetricsLogBox.scrollTop = speakerMetricsLogBox.scrollHeight;
+  }
+
+  // ===== WebSocket =====
+  let ws = null;
+
+  function setWsState(isOpen) {
+    wsDot.classList.toggle('ok', isOpen);
+    wsDot.classList.toggle('ng', !isOpen);
+    wsStatus.textContent = isOpen ? 'open' : 'closed';
+  }
+
+  function wsConnect() {
+    if (ws && (ws.readyState === 0 || ws.readyState === 1)) return;
+    const url = (location.protocol === 'https:' ? 'wss://' : 'ws://') + location.host + '/ws';
+    ws = new WebSocket(url);
+    ws.onopen = () => { setWsState(true); log("connected"); };
+    ws.onclose = () => { setWsState(false); log("connection closed"); };
+    ws.onerror = (e) => { setWsState(false); log("ws error"); };
+    ws.onmessage = (ev) => {
+      try {
+        const data = JSON.parse(ev.data);
+        if (data?.type === 'tick') {
+          // デバッグ用途：必要ならここで表示
+        }
+      } catch {}
+    };
+  }
+
+  // ===== Topic UI & colors =====
+  const seenTopics = new Set();
+  const topicStates = []; // {topic, scores[], avg, element}
+  let lastResult = null;
+  let lastVoiceScore = NaN;
+
+  function clamp01(x) { return Math.max(0, Math.min(1, x)); }
+  function lerp(a, b, t) { return a + (b - a) * t; }
+  function rgbToHex(r, g, b) {
+    const toHex = (x) => Math.round(x).toString(16).padStart(2, '0');
+    return `#${toHex(r)}${toHex(g)}${toHex(b)}`;
+  }
+  function getTopicColorFromScore(score) {
+    // score 0..1: Low=deep blue -> cyan -> green -> yellow -> High=red (写真のようなグラデ)
+    if (!isFinite(score)) return '#e9ecf7'; // neutral default
+    const s = clamp01(score);
+    // stop0: blue, stop1: cyan, stop2: green, stop3: yellow, stop4: red
+    const stops = [
+      { t: 0.00, c: { r: 0x0b, g: 0x4b, b: 0xff } }, // blue
+      { t: 0.25, c: { r: 0x12, g: 0xc0, b: 0xff } }, // cyan
+      { t: 0.50, c: { r: 0x18, g: 0xe7, b: 0x6a } }, // green
+      { t: 0.75, c: { r: 0xff, g: 0xd4, b: 0x00 } }, // yellow
+      { t: 1.00, c: { r: 0xff, g: 0x33, b: 0x33 } }, // red
+    ];
+
+    let i = 0;
+    while (i < stops.length - 1 && s > stops[i + 1].t) i++;
+    const a = stops[i];
+    const b = stops[Math.min(i + 1, stops.length - 1)];
+    const span = b.t - a.t || 1;
+    const t = (s - a.t) / span;
+    const r = lerp(a.c.r, b.c.r, t);
+    const g = lerp(a.c.g, b.c.g, t);
+    const bCol = lerp(a.c.b, b.c.b, t);
+    return rgbToHex(r, g, bCol);
+  }
+
+  function topicToString(t) {
+    if (t == null) return '';
+    if (typeof t === 'string') return t.trim();
+    if (typeof t === 'number') return String(t);
+    if (typeof t === 'object') {
+      const cand = t.topic ?? t.text ?? t.label ?? t.keyword ?? t.keyphrase ?? t.surface ?? t.word ?? '';
+      return (String(cand || '')).trim();
+    }
+    return String(t).trim();
+  }
+
+  function addTopicBadge(topic, scoreHint=null) {
+    const box = document.getElementById('topics');
+    const b = document.createElement('button');
+    b.className = 'topicBtn';
+    b.textContent = topic;
+    b.style.background = getTopicColorFromScore(scoreHint);
+    b.onclick = () => showQuestions(topic);
+    box.appendChild(b);
+
+    topicStates.push({
+      topic,
+      scores: [],
+      avg: (isFinite(scoreHint) ? scoreHint : NaN),
+      element: b,
+    });
+  }
+
+  function clearTopics() {
+    seenTopics.clear();
+    topicStates.length = 0;
+    document.getElementById('topics').innerHTML = '';
+  }
+
+  // 「一番新しい話題」に /voice_features の score を追加して平均を更新（色も更新）
+  function addScoreToCurrentTopic(score) {
+    if (!isFinite(score)) return;
+    if (!topicStates.length) return;
+
+    const state = topicStates[topicStates.length - 1];
+    state.scores.push(score);
+    const sum = state.scores.reduce((a, c) => a + c, 0);
+    state.avg = sum / state.scores.length;
+    state.element.style.background = getTopicColorFromScore(state.avg);
+  }
+
+  // topics から「新しい話題を 1 個だけ」採用（既出はスキップ）
+  function appendTopics(topics) {
+    if (!topics || !topics.length) return;
+
+    let selected = null;
+    let selectedScore = NaN;
+
+    for (const raw of topics) {
+      const topic = topicToString(raw);
+      if (!topic) continue;
+      if (seenTopics.has(topic)) continue;
+      selected = topic;
+
+      // もし raw が object で score/level を持ってるなら使う
+      if (raw && typeof raw === 'object') {
+        if (typeof raw.score_avg === 'number') selectedScore = raw.score_avg;
+        else if (typeof raw.score === 'number') selectedScore = raw.score;
+      }
+      break;
+    }
+    if (!selected) return;
+    if (!isFinite(selectedScore) && isFinite(lastVoiceScore)) {
+      selectedScore = lastVoiceScore;
+    }
+
+    seenTopics.add(selected);
+    addTopicBadge(selected, selectedScore);
+  }
+
+  async function showQuestions(topic) {
+    document.getElementById('currentTopic').textContent = topic ? `（${topic}）` : '';
+    const qbox = document.getElementById('questions');
+    qbox.innerHTML = '';
+
+    // 旧形式/新形式どちらでも「質問の配列」に正規化する
+    const normalizeToList = (q) => {
+      if (!q) return [];
+      if (Array.isArray(q)) return q;                 // ✅ 新形式: ["Q1","Q2","Q3"]
+      if (Array.isArray(q.questions)) return q.questions; // ✅ 新形式(別案): {questions:[...]}
+      // ✅ 旧形式: {shallow:[...], medium:[...], deep:[...]}
+      const s = Array.isArray(q.shallow) ? q.shallow : [];
+      const m = Array.isArray(q.medium) ? q.medium : [];
+      const d = Array.isArray(q.deep) ? q.deep : [];
+      return [...s, ...m, ...d];
+    };
+
+    const renderList = (list, noteText = null) => {
+      qbox.innerHTML = '';
+      if (noteText) {
+        const note = document.createElement('div');
+        note.className = 'small';
+        note.style.marginBottom = '8px';
+        note.textContent = noteText;
+        qbox.appendChild(note);
+      }
+
+      if (!list.length) {
+        qbox.textContent = '質問がありません。';
+        return;
+      }
+
+      const ul = document.createElement('ul');
+      list.slice(0, 3).forEach((x) => {   // 念のため「最大3つ」に固定
+        const li = document.createElement('li');
+        li.textContent = x;
+        ul.appendChild(li);
+      });
+      qbox.appendChild(ul);
+    };
+
+    // すでに生成済みならそれを表示（ただし空なら再生成する）
+    const qbt = (lastResult?.result?.questions_by_topic || {});
+    const existing = qbt[topic];
+    const existingList = normalizeToList(existing);
+    if (existingList.length) {
+      renderList(existingList);
+      return;
+    }
+
+    // 未生成（または前回失敗で空）なら生成
+    qbox.textContent = '生成中...';
+
+    try {
+      const contextText = (typeof getFinalText === 'function')
+        ? getFinalText()
+        : (document.getElementById('speechArea')?.value || '');
+
+      const r = await fetch(API_BASE + '/generate_questions', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ topic, context_text: contextText })
+      });
+
+      const d = await r.json().catch(() => ({}));
+      if (!r.ok) {
+        qbox.textContent = `生成失敗: ${r.status} ${JSON.stringify(d)}`;
+        return;
+      }
+
+      // d.questions を保存（形式はそのまま）
+      if (!lastResult) lastResult = { result: {} };
+      if (!lastResult.result) lastResult.result = {};
+      if (!lastResult.result.questions_by_topic) lastResult.result.questions_by_topic = {};
+      lastResult.result.questions_by_topic[topic] = d.questions;
+
+      // 表示
+      const list = normalizeToList(d.questions);
+      // もしサーバが safe/notes を返しているなら、失敗理由の見える化に使う
+      const note = (d && d.safe === false)
+        ? `質問生成に失敗した可能性があります: ${d.notes || '(詳細なし)'}`
+        : null;
+
+      renderList(list, note);
+
+    } catch (e) {
+      qbox.textContent = `生成エラー: ${e}`;
+    }
+  }
+
+  // ===== Speech Recognition =====
+  let recognition = null;
+  let recognizing = false;
+  let finalText = '';
+  let partialText = '';
+
+  function setupRecognition() {
+    const SR = window.SpeechRecognition || window.webkitSpeechRecognition;
+    if (!SR) {
+      log("SpeechRecognition API not supported in this browser.");
+      return null;
+    }
+    const r = new SR();
+    r.lang = 'ja-JP';
+    r.continuous = true;
+    r.interimResults = true;
+
+    r.onstart = () => { recognizing = true; log("speech recognition started"); };
+    r.onend = () => { recognizing = false; log("speech recognition ended"); };
+    r.onerror = (e) => { log("speech error: " + (e?.error || 'unknown')); };
+
+    r.onresult = (ev) => {
+      let interim = '';
+      for (let i = ev.resultIndex; i < ev.results.length; i++) {
+        const res = ev.results[i];
+        const txt = (res[0]?.transcript || '');
+        if (res.isFinal) {
+          finalText += txt;
+        } else {
+          interim += txt;
+        }
+      }
+      partialText = interim;
+      speechArea.value = (finalText + partialText).trim();
+    };
+    return r;
+  }
+
+  // ===== Topics incremental (差分 + 低頻度) =====
+  let topicsTimer = null;
+  let sentFinalLen = 0;
+  let lastTopicCallAt = 0;
+
+  const TOPIC_MIN_INTERVAL_MS = 8000;   // 以前より“ゆっくり”
+  const TOPIC_MIN_NEW_CHARS = 18;       // 差分が小さい時は送らない
+
+  function getFinalText() {
+    // finalText は内部保持、speechArea は表示用
+    return (finalText || '').trim();
+  }
+
+  async function postTopicsIncrementalDelta(force=false) {
+    const now = Date.now();
+    if (!force && (now - lastTopicCallAt) < TOPIC_MIN_INTERVAL_MS) return;
+
+    const ft = getFinalText();
+    if (!ft) return;
+
+    const delta = ft.slice(sentFinalLen).trim();
+    if (!delta) return;
+    if (!force && delta.length < TOPIC_MIN_NEW_CHARS) return;
+
+    lastTopicCallAt = now;
+
+    try {
+      const r = await fetch(API_BASE + '/topics_incremental', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ text: delta })
+      });
+      const d = await r.json().catch(() => ({}));
+      if (!r.ok) {
+        log(`topics_incremental failed: ${r.status} ${JSON.stringify(d)}`);
+        return;
+      }
+      // 送れたら “差分ぶん” 進める（成功時のみ）
+      sentFinalLen = ft.length;
+
+      const topics = d.topics || d.result?.topics || [];
+      appendTopics(topics);
+      lastResult = d;
+    } catch (e) {
+      log(`topics_incremental error: ${e}`);
+    }
+  }
+
+  // ===== Voice features (WebAudio -> /voice_features) =====
+  let audioCtx = null;
+  let analyser = null;
+  let micStream = null;
+  let voiceTimer = null;
+
+  const WINDOW_SEC = 3;
+  let voiceWindowIndex = 0;
+  let energyVals = [];
+  let pitchTrackHz = [];
+
+  // ===== Diarization (MediaRecorder -> /ws_diarize) =====
+  let wsDiarize = null;
+  let diarizeRecorder = null;
+  let diarizeOffsetSec = 0;
+  let diarizeChunkId = 0;
+  const DIARIZE_CHUNK_MS = 6000;
+  let diarizeActive = false;
+  const metricsBuffer = [];
+
+  function safeNum(x, fallback=0) {
+    return (typeof x === 'number' && isFinite(x)) ? x : fallback;
+  }
+
+  function resetVoiceTracking() {
+    energyVals = [];
+    pitchTrackHz = [];
+  }
+
+
+  function computeEnergyMeanVar() {
+    const arr = energyVals;
+    if (!arr.length) return { mean: 0, var: 0 };
+    const mean = arr.reduce((a,c)=>a+c,0) / arr.length;
+    const v = arr.reduce((a,c)=>a+(c-mean)*(c-mean),0) / arr.length;
+    return { mean, var: v };
+  }
+
+  // 簡易ピッチ推定（自己相関）
+  function estimatePitchHz(buffer, sampleRate) {
+    // buffer: Float32Array
+    const n = buffer.length;
+    if (n < 32) return 0;
+
+    // 無音なら 0
+    let rms = 0;
+    for (let i=0;i<n;i++) rms += buffer[i]*buffer[i];
+    rms = Math.sqrt(rms/n);
+    if (rms < 0.01) return 0;
+
+    // 自己相関
+    let bestLag = -1;
+    let bestCorr = 0;
+    const minHz = 60;
+    const maxHz = 400;
+    const minLag = Math.floor(sampleRate / maxHz);
+    const maxLag = Math.floor(sampleRate / minHz);
+
+    for (let lag=minLag; lag<=maxLag; lag++) {
+      let corr = 0;
+      for (let i=0; i<n-lag; i++) corr += buffer[i] * buffer[i+lag];
+      corr = corr / (n-lag);
+      if (corr > bestCorr) {
+        bestCorr = corr;
+        bestLag = lag;
+      }
+    }
+
+    if (bestLag <= 0) return 0;
+    const hz = sampleRate / bestLag;
+    if (!isFinite(hz)) return 0;
+    return hz;
+  }
+
+  function computePitchMeanVar() {
+    const arr = pitchTrackHz.filter(x => x > 0);
+    if (!arr.length) return { mean: 0, var: 0 };
+    const mean = arr.reduce((a,c)=>a+c,0) / arr.length;
+    const v = arr.reduce((a,c)=>a+(c-mean)*(c-mean),0) / arr.length;
+    return { mean, var: v };
+  }
+
+  function computeVoicedRatio() {
+    // pitchTrackHz は estimatePitchHz() が「無音/非有声」を 0 にしている前提
+    const n = pitchTrackHz.length;
+    if (!n) return null;
+    let voiced = 0;
+    for (let i = 0; i < n; i++) {
+      if (pitchTrackHz[i] > 0) voiced++;
+    }
+    return voiced / n; // 0..1
+  }
+
+
+  function computeSpeechRate() {
+    // 超簡易：エネルギーの上昇イベント数から推定（秒あたり）
+    if (!energyVals.length) return 0;
+    const mean = energyVals.reduce((a,c)=>a+c,0) / energyVals.length;
+    const th = mean * 1.3;
+    let peaks = 0;
+    for (let i=1;i<energyVals.length-1;i++) {
+      if (energyVals[i] > th && energyVals[i] > energyVals[i-1] && energyVals[i] > energyVals[i+1]) peaks++;
+    }
+    const sec = WINDOW_SEC;
+    return sec > 0 ? (peaks / sec) : 0;
+  }
+
+  function startWebAudio() {
+    return new Promise(async (resolve, reject) => {
+      try {
+        micStream = await navigator.mediaDevices.getUserMedia({ audio: true });
+        audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+        const src = audioCtx.createMediaStreamSource(micStream);
+
+        analyser = audioCtx.createAnalyser();
+        analyser.fftSize = 2048;
+
+        src.connect(analyser);
+
+        // 解析ループ
+        const buf = new Float32Array(analyser.fftSize);
+        const stepMs = 50; // 20Hz
+        let running = true;
+
+        function loop() {
+          if (!running || !analyser || !audioCtx) return;
+          analyser.getFloatTimeDomainData(buf);
+
+          // energy (RMS)
+          let rms = 0;
+          for (let i=0;i<buf.length;i++) rms += buf[i]*buf[i];
+          rms = Math.sqrt(rms / buf.length);
+          energyVals.push(rms);
+
+          // pitch
+          const hz = estimatePitchHz(buf, audioCtx.sampleRate);
+          pitchTrackHz.push(hz);
+
+          setTimeout(loop, stepMs);
+        }
+        loop();
+
+        resolve(() => { running = false; });
+      } catch (e) {
+        reject(e);
+      }
+    });
+  }
+
+  function getRecorderMimeType() {
+    const candidates = [
+      'audio/webm;codecs=opus',
+      'audio/webm',
+      'audio/ogg;codecs=opus',
+      'audio/ogg'
+    ];
+    for (const t of candidates) {
+      if (window.MediaRecorder && MediaRecorder.isTypeSupported(t)) return t;
+    }
+    return '';
+  }
+
+  function mimeTypeToSuffix(mimeType) {
+    const t = (mimeType || '').toLowerCase();
+    if (t.includes('webm')) return '.webm';
+    if (t.includes('ogg')) return '.ogg';
+    return '.webm';
+  }
+
+  function arrayBufferToBase64(buffer) {
+    const bytes = new Uint8Array(buffer);
+    const chunk = 0x8000;
+    let binary = '';
+    for (let i = 0; i < bytes.length; i += chunk) {
+      binary += String.fromCharCode.apply(null, bytes.subarray(i, i + chunk));
+    }
+    return btoa(binary);
+  }
+
+  function wsDiarizeConnect() {
+    if (wsDiarize && (wsDiarize.readyState === 0 || wsDiarize.readyState === 1)) return;
+    const url = (location.protocol === 'https:' ? 'wss://' : 'ws://') + location.host + '/ws_diarize';
+    wsDiarize = new WebSocket(url);
+    wsDiarize.onopen = () => logDiarize("[diarize] connected");
+    wsDiarize.onclose = () => logDiarize("[diarize] connection closed");
+    wsDiarize.onerror = () => logDiarize("[diarize] error");
+    wsDiarize.onmessage = (ev) => {
+      try {
+        const data = JSON.parse(ev.data);
+        if (data?.type === 'segments') {
+          const segs = data.payload?.segments || [];
+          const chunkId = data.payload?.chunk_id;
+          const durations = data.payload?.durations || {};
+          const metrics = data.payload?.metrics || {};
+          logDiarize(`[diarize] segments: ${segs.length}`);
+          if (chunkId !== undefined) {
+            logDiarize(`[diarize] recv chunk_id=${chunkId} diarize=${durations.diarize_sec ?? 'n/a'}s`);
+          }
+          for (const s of segs) {
+            logDiarize(`  ${s.speaker} ${s.start.toFixed(2)}-${s.end.toFixed(2)}s`);
+          }
+          if (metrics) {
+            const tc = metrics.turn_changes_chunk ?? 0;
+            const tt = metrics.turn_changes_total ?? 0;
+            if (turnTotalEl) turnTotalEl.textContent = String(tt);
+            if (turnChunkEl) turnChunkEl.textContent = String(tc);
+            if (currentSpeakerEl) {
+              const lastSeg = segs[segs.length - 1];
+              currentSpeakerEl.textContent = lastSeg?.speaker ?? "-";
+            }
+            logMetrics(`[turn] +${tc} (total ${tt})`);
+            const tone = metrics.tone_change_by_speaker || {};
+            const feats = metrics.features_by_speaker || {};
+            for (const spk of Object.keys(tone)) {
+              const d = tone[spk];
+              const f = feats[spk] || {};
+              const line =
+                `[tone] ${spk} delta=${Number(d).toFixed(3)} ` +
+                `(pitch_var=${Number(f.pitch_var ?? 0).toFixed(3)} ` +
+                `energy_var=${Number(f.energy_var ?? 0).toFixed(6)} ` +
+                `rate=${Number(f.speech_rate ?? 0).toFixed(3)})`;
+              metricsBuffer.push(line);
+            }
+            while (metricsBuffer.length > 50) metricsBuffer.shift();
+            speakerMetricsLogBox.textContent = metricsBuffer.join("\n");
+            speakerMetricsLogBox.scrollTop = speakerMetricsLogBox.scrollHeight;
+          }
+          return;
+        }
+        if (data?.type === 'error') {
+          logDiarize(`[diarize] error: ${data.error}`);
+        }
+      } catch {}
+    };
+  }
+
+  function startDiarize() {
+    if (!micStream) {
+      logDiarize("[diarize] mic stream not ready");
+      return;
+    }
+    if (!window.MediaRecorder) {
+      logDiarize("[diarize] MediaRecorder not supported");
+      return;
+    }
+    if (diarizeActive) return;
+
+    wsDiarizeConnect();
+    diarizeOffsetSec = 0;
+    diarizeActive = true;
+
+    const mimeType = getRecorderMimeType();
+    const suffix = mimeTypeToSuffix(mimeType);
+
+    const startCycle = () => {
+      if (!diarizeActive) return;
+      try {
+        diarizeRecorder = mimeType
+          ? new MediaRecorder(micStream, { mimeType })
+          : new MediaRecorder(micStream);
+      } catch (e) {
+        logDiarize("[diarize] MediaRecorder init failed: " + e);
+        diarizeActive = false;
+        return;
+      }
+
+      diarizeRecorder.ondataavailable = async (ev) => {
+        if (!ev.data || ev.data.size === 0) return;
+        if (!wsDiarize || wsDiarize.readyState !== 1) return;
+
+        const buf = await ev.data.arrayBuffer();
+        const b64 = arrayBufferToBase64(buf);
+
+        const chunkId = diarizeChunkId++;
+        logDiarize(`[diarize] send chunk_id=${chunkId} bytes=${buf.byteLength} offset=${diarizeOffsetSec.toFixed(2)}`);
+        wsDiarize.send(JSON.stringify({
+          type: "chunk",
+          chunk_id: chunkId,
+          audio_base64: b64,
+          suffix,
+          offset_sec: diarizeOffsetSec
+        }));
+
+        diarizeOffsetSec += (DIARIZE_CHUNK_MS / 1000);
+      };
+
+      diarizeRecorder.onstop = () => {
+        if (diarizeActive) startCycle();
+      };
+
+      diarizeRecorder.start();
+      setTimeout(() => {
+        if (diarizeRecorder && diarizeRecorder.state === 'recording') {
+          diarizeRecorder.stop();
+        }
+      }, DIARIZE_CHUNK_MS);
+    };
+
+    startCycle();
+    logDiarize("[diarize] started (MediaRecorder -> /ws_diarize)");
+  }
+
+  function stopDiarize() {
+    diarizeActive = false;
+    if (diarizeRecorder && diarizeRecorder.state === 'recording') {
+      diarizeRecorder.stop();
+    }
+    diarizeRecorder = null;
+    diarizeOffsetSec = 0;
+    if (wsDiarize && wsDiarize.readyState === 1) {
+      wsDiarize.close();
+    }
+    wsDiarize = null;
+    logDiarize("[diarize] stopped");
+  }
+
+  async function postVoiceFeatures() {
+    if (!analyser || !audioCtx) {
+      logVoice("[voice] (skip) audioCtx not ready");
+      return;
+    }
+
+    // WINDOW_SEC の間に溜まった統計を送る
+    const e = computeEnergyMeanVar();
+    const p = computePitchMeanVar();
+    const rate = computeSpeechRate();
+
+    const payload = {
+      window_index: voiceWindowIndex,
+      duration_sec: WINDOW_SEC,
+      pitch_var: safeNum(p.var, 0),
+      energy_var: safeNum(e.var, 0),
+      speech_rate: safeNum(rate, 0),
+      // 追加情報（サーバ側が無視してもOK）
+      pitch_mean: safeNum(p.mean, 0),
+      energy_mean: safeNum(e.mean, 0),
+      voiced_ratio: computeVoicedRatio(),
+      speaker_id: "mix"
+    };
+
+    resetVoiceTracking();
+
+    try {
+      const r = await fetch(API_BASE + '/voice_features', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(payload)
+      });
+      const d = await r.json().catch(() => ({}));
+      if (!r.ok) {
+        // 422 のときに原因が分かるようにログ
+        logVoice(`[voice] ERROR ${r.status}: ${JSON.stringify(d)}`);
+        voiceWindowIndex++;
+        return;
+      }
+
+      const score = d.score;
+      const phase = d.phase;
+
+      if (phase === "calib") {
+        logVoice(`[voice] calib #${payload.window_index} score=null (pitch_mu=-- energy_mu=-- rate_mu=--)`);
+      } else {
+        logVoice(
+          `[voice] run #${payload.window_index} score=${safeNum(score, NaN).toFixed(3)} ` +
+          `(pitch_mu=${safeNum(d?.baseline?.pitch_mu, 0)} ` +
+          `energy_mu=${safeNum(d?.baseline?.energy_mu, 0)} ` +
+          `rate_mu=${safeNum(d?.baseline?.rate_mu, 0)} ` +
+          `voiced_mu=${safeNum(d?.baseline?.voiced_mu, NaN)})`
+        );
+        if (isFinite(score)) lastVoiceScore = score;
+        addScoreToCurrentTopic(score);
+      }
+
+      voiceWindowIndex++;
+    } catch (e) {
+      logVoice(`TypeError: Failed to fetch`);
+    }
+  }
+
+  async function startVoice() {
+    if (voiceTimer) return;
+    voiceWindowIndex = 0;
+    resetVoiceTracking();
+    logVoice("[voice] started (WebAudio -> /voice_features)");
+
+    try {
+      await startWebAudio();
+    } catch (e) {
+      logVoice("[voice] mic error: " + e);
+      return;
+    }
+
+    voiceTimer = setInterval(postVoiceFeatures, WINDOW_SEC * 1000);
+    // すぐ 1 回投げない（データが溜まってから）
+    startDiarize();
+  }
+
+  function stopVoice() {
+    if (voiceTimer) { clearInterval(voiceTimer); voiceTimer = null; }
+    if (micStream) {
+      micStream.getTracks().forEach(t => t.stop());
+      micStream = null;
+    }
+    if (audioCtx) {
+      audioCtx.close().catch(()=>{});
+      audioCtx = null;
+      analyser = null;
+    }
+    resetVoiceTracking();
+    logVoice("[voice] stopped");
+    stopDiarize();
+  }
+
+  // ===== Buttons =====
+  btnConnect.onclick = () => wsConnect();
+
+  btnStart.onclick = async () => {
+    // recognition
+    if (!recognition) recognition = setupRecognition();
+    if (recognition && !recognizing) {
+      finalText = '';
+      partialText = '';
+      speechArea.value = '';
+      sentFinalLen = 0;
+      lastTopicCallAt = 0;
+
+      clearTopics();
+      document.getElementById('questions').innerHTML = '';
+      document.getElementById('currentTopic').textContent = '（話題をクリックすると生成します）';
+
+      recognition.start();
+      btnStart.disabled = true;
+      btnStop.disabled = false;
+
+      // voice features
+      await startVoice();
+
+      // topics polling（差分で、低頻度）
+      if (!topicsTimer) {
+        topicsTimer = setInterval(() => postTopicsIncrementalDelta(false), 1500);
+      }
+    }
+  };
+
+  btnStop.onclick = async () => {
+    try { recognition && recognition.stop(); } catch {}
+    btnStart.disabled = false;
+    btnStop.disabled = true;
+
+    stopVoice();
+
+    // 最後に残った差分を force で送る
+    await postTopicsIncrementalDelta(true);
+
+    if (topicsTimer) { clearInterval(topicsTimer); topicsTimer = null; }
+  };
+
+  btnTick.onclick = () => {
+    try {
+      if (ws && ws.readyState === 1) {
+        ws.send(JSON.stringify({ type: "tick" }));
+        log("WS send:tick");
+      } else {
+        log("WS not connected");
+      }
+    } catch {}
+  };
+
+  btnHigh.onclick = () => addScoreToCurrentTopic(0.85);
+  btnMid.onclick  = () => addScoreToCurrentTopic(0.50);
+  btnLow.onclick  = () => addScoreToCurrentTopic(0.15);
+
+  // 初期状態
+  setWsState(false);
+})();
+</script>
+</body>
+</html>

@@ -1,0 +1,37 @@
+#このプロジェクトに必要なライブラリのバージョンを明記し、誰が実行しても同じ環境にするためのファイル
+
+fastapi==0.115.0
+uvicorn[standard]==0.30.6
+python-dotenv==1.0.1
+websockets==12.0
+pydantic==2.9.2
+requests==2.31.0
+starlette==0.38.6
+python-multipart==0.0.21
+
+# 音声処理（MVPでは一部をモック可能）
+webrtcvad==2.0.10
+librosa==0.10.2.post1
+numpy==1.26.4
+
+# ASR（ローカルで手軽に動かすなら）
+faster-whisper==1.0.2
+
+# 日本語NLP（MVPは簡略可）
+sudachipy==0.6.8
+sudachidict_core==20240409
+
+# （将来）BERTopic等
+# bertopic==0.16.0
+# sentence-transformers==3.0.1
+
+# （将来）話者分離
+pyannote.audio==4.0.3
+huggingface_hub==1.2.3
+
+# 話者分離の埋め込み（pyannoteの依存）
+speechbrain==1.0.3
+torch==2.8.0
+
+# LLM 質問生成
+openai==2.14.0

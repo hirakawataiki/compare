@@ -1,0 +1,501 @@
+
+(.venv) ~/MyHobby/Yudai/test/taiki_sotuken % python -m uvicorn src.app.main:app --reload
+INFO:     Will watch for changes in these directories: ['/Users/honmayuudai/MyHobby/Yudai/test/taiki_sotuken']
+INFO:     Uvicorn running on http://127.0.0.1:8000 (Press CTRL+C to quit)
+INFO:     Started reloader process [44955] using WatchFiles
+[ConversationPipeline] UUDB load_para_file failed: .para file not found: C:\UUDB/var/C001/C001.para (OK: live voice only)
+INFO:     Started server process [44957]
+INFO:     Waiting for application startup.
+INFO:     Application startup complete.
+INFO:     127.0.0.1:56578 - "GET / HTTP/1.1" 200 OK
+INFO:     ('127.0.0.1', 56599) - "WebSocket /ws_diarize" [accepted]
+INFO:     connection open
+INFO:     ('127.0.0.1', 56615) - "WebSocket /ws" [accepted]
+INFO:     connection open
+INFO:     127.0.0.1:56579 - "POST /voice_features HTTP/1.1" 200 OK
+/Users/honmayuudai/MyHobby/Yudai/test/taiki_sotuken/.venv/lib/python3.10/site-packages/speechbrain/utils/torch_audio_backend.py:57: UserWarning: torchaudio._backend.list_audio_backends has been deprecated. This deprecation is part of a large refactoring effort to transition TorchAudio into a maintenance phase. The decoding and encoding capabilities of PyTorch for both audio and video are being consolidated into TorchCodec. Please see https://github.com/pytorch/audio/issues/3902 for more information. It will be removed from the 2.9 release.
+  available_backends = torchaudio.list_audio_backends()
+Lightning automatically upgraded your loaded checkpoint from v1.5.4 to v2.6.0. To apply the upgrade to your files permanently, run `python -m lightning.pytorch.utilities.upgrade_checkpoint ../../../../.cache/huggingface/hub/models--pyannote--segmentation/snapshots/c4c8ceafcbb3a7a280c2d357aee9fbc9b0be7f9b/pytorch_model.bin`
+/Users/honmayuudai/MyHobby/Yudai/test/taiki_sotuken/.venv/lib/python3.10/site-packages/speechbrain/utils/autocast.py:188: FutureWarning: `torch.cuda.amp.custom_fwd(args...)` is deprecated. Please use `torch.amp.custom_fwd(args..., device_type='cuda')` instead.
+  wrapped_fwd = torch.cuda.amp.custom_fwd(fwd, cast_inputs=cast_inputs)
+/Users/honmayuudai/MyHobby/Yudai/test/taiki_sotuken/.venv/lib/python3.10/site-packages/pyannote/audio/pipelines/speaker_diarization.py:662: UserWarning:
+The detected number of speakers (1) for ws_diarize_1766983229222 is outside
+the given bounds [2, 2]. This can happen if the
+given audio file is too short to contain 2 or more speakers.
+Try to lower the desired minimal number of speakers.
+
+  warnings.warn(
+INFO:     127.0.0.1:56579 - "POST /voice_features HTTP/1.1" 200 OK
+INFO:     127.0.0.1:56650 - "POST /topics_incremental HTTP/1.1" 200 OK
+/Users/honmayuudai/MyHobby/Yudai/test/taiki_sotuken/.venv/lib/python3.10/site-packages/pyannote/audio/pipelines/speaker_diarization.py:662: UserWarning:
+The detected number of speakers (1) for ws_diarize_1766983237300 is outside
+the given bounds [2, 2]. This can happen if the
+given audio file is too short to contain 2 or more speakers.
+Try to lower the desired minimal number of speakers.
+
+  warnings.warn(
+/Users/honmayuudai/MyHobby/Yudai/test/taiki_sotuken/.venv/lib/python3.10/site-packages/pyannote/audio/pipelines/speaker_diarization.py:662: UserWarning:
+The detected number of speakers (1) for ws_diarize_1766983237581 is outside
+the given bounds [2, 2]. This can happen if the
+given audio file is too short to contain 2 or more speakers.
+Try to lower the desired minimal number of speakers.
+
+  warnings.warn(
+INFO:     127.0.0.1:56663 - "POST /voice_features HTTP/1.1" 200 OK
+INFO:     127.0.0.1:56663 - "POST /voice_features HTTP/1.1" 200 OK
+/Users/honmayuudai/MyHobby/Yudai/test/taiki_sotuken/.venv/lib/python3.10/site-packages/pyannote/audio/pipelines/speaker_diarization.py:662: UserWarning:
+The detected number of speakers (1) for ws_diarize_1766983238226 is outside
+the given bounds [2, 2]. This can happen if the
+given audio file is too short to contain 2 or more speakers.
+Try to lower the desired minimal number of speakers.
+
+  warnings.warn(
+INFO:     127.0.0.1:56663 - "POST /voice_features HTTP/1.1" 200 OK
+/Users/honmayuudai/MyHobby/Yudai/test/taiki_sotuken/.venv/lib/python3.10/site-packages/pyannote/audio/pipelines/speaker_diarization.py:662: UserWarning:
+The detected number of speakers (1) for ws_diarize_1766983241231 is outside
+the given bounds [2, 2]. This can happen if the
+given audio file is too short to contain 2 or more speakers.
+Try to lower the desired minimal number of speakers.
+
+  warnings.warn(
+Yahoo keyphrase failed or no good topics, fallback to Sudachi: no good noun topics from Yahoo keyphrases
+INFO:     127.0.0.1:56663 - "POST /topics_incremental HTTP/1.1" 200 OK
+[VoiceEngagementRuntime] baseline fixed: pitch_var_mu=3307.662352, energy_var_mu=0.002300, rate_mu=2.222, pitch_mean_mu=139.15, energy_mean_mu=0.032327, voiced_mu=0.533
+INFO:     127.0.0.1:56663 - "POST /voice_features HTTP/1.1" 200 OK
+/Users/honmayuudai/MyHobby/Yudai/test/taiki_sotuken/.venv/lib/python3.10/site-packages/pyannote/audio/pipelines/speaker_diarization.py:662: UserWarning:
+The detected number of speakers (1) for ws_diarize_1766983244232 is outside
+the given bounds [2, 2]. This can happen if the
+given audio file is too short to contain 2 or more speakers.
+Try to lower the desired minimal number of speakers.
+
+  warnings.warn(
+INFO:     127.0.0.1:56663 - "POST /voice_features HTTP/1.1" 200 OK
+/Users/honmayuudai/MyHobby/Yudai/test/taiki_sotuken/.venv/lib/python3.10/site-packages/pyannote/audio/pipelines/speaker_diarization.py:662: UserWarning:
+The detected number of speakers (1) for ws_diarize_1766983247238 is outside
+the given bounds [2, 2]. This can happen if the
+given audio file is too short to contain 2 or more speakers.
+Try to lower the desired minimal number of speakers.
+
+  warnings.warn(
+INFO:     127.0.0.1:56663 - "POST /voice_features HTTP/1.1" 200 OK
+/Users/honmayuudai/MyHobby/Yudai/test/taiki_sotuken/.venv/lib/python3.10/site-packages/pyannote/audio/pipelines/speaker_diarization.py:662: UserWarning:
+The detected number of speakers (1) for ws_diarize_1766983250240 is outside
+the given bounds [2, 2]. This can happen if the
+given audio file is too short to contain 2 or more speakers.
+Try to lower the desired minimal number of speakers.
+
+  warnings.warn(
+INFO:     127.0.0.1:56663 - "POST /voice_features HTTP/1.1" 200 OK
+/Users/honmayuudai/MyHobby/Yudai/test/taiki_sotuken/.venv/lib/python3.10/site-packages/pyannote/audio/pipelines/speaker_diarization.py:662: UserWarning:
+The detected number of speakers (1) for ws_diarize_1766983253242 is outside
+the given bounds [2, 2]. This can happen if the
+given audio file is too short to contain 2 or more speakers.
+Try to lower the desired minimal number of speakers.
+
+  warnings.warn(
+INFO:     127.0.0.1:56663 - "POST /voice_features HTTP/1.1" 200 OK
+/Users/honmayuudai/MyHobby/Yudai/test/taiki_sotuken/.venv/lib/python3.10/site-packages/pyannote/audio/pipelines/speaker_diarization.py:662: UserWarning:
+The detected number of speakers (1) for ws_diarize_1766983256245 is outside
+the given bounds [2, 2]. This can happen if the
+given audio file is too short to contain 2 or more speakers.
+Try to lower the desired minimal number of speakers.
+
+  warnings.warn(
+INFO:     127.0.0.1:56663 - "POST /voice_features HTTP/1.1" 200 OK
+/Users/honmayuudai/MyHobby/Yudai/test/taiki_sotuken/.venv/lib/python3.10/site-packages/pyannote/audio/pipelines/speaker_diarization.py:662: UserWarning:
+The detected number of speakers (1) for ws_diarize_1766983259245 is outside
+the given bounds [2, 2]. This can happen if the
+given audio file is too short to contain 2 or more speakers.
+Try to lower the desired minimal number of speakers.
+
+  warnings.warn(
+INFO:     127.0.0.1:56663 - "POST /voice_features HTTP/1.1" 200 OK
+/Users/honmayuudai/MyHobby/Yudai/test/taiki_sotuken/.venv/lib/python3.10/site-packages/pyannote/audio/pipelines/speaker_diarization.py:662: UserWarning:
+The detected number of speakers (1) for ws_diarize_1766983262252 is outside
+the given bounds [2, 2]. This can happen if the
+given audio file is too short to contain 2 or more speakers.
+Try to lower the desired minimal number of speakers.
+
+  warnings.warn(
+INFO:     127.0.0.1:56663 - "POST /voice_features HTTP/1.1" 200 OK
+/Users/honmayuudai/MyHobby/Yudai/test/taiki_sotuken/.venv/lib/python3.10/site-packages/pyannote/audio/pipelines/speaker_diarization.py:662: UserWarning:
+The detected number of speakers (1) for ws_diarize_1766983265245 is outside
+the given bounds [2, 2]. This can happen if the
+given audio file is too short to contain 2 or more speakers.
+Try to lower the desired minimal number of speakers.
+
+  warnings.warn(
+INFO:     127.0.0.1:56663 - "POST /topics_incremental HTTP/1.1" 200 OK
+INFO:     127.0.0.1:56663 - "POST /voice_features HTTP/1.1" 200 OK
+INFO:     127.0.0.1:56663 - "POST /voice_features HTTP/1.1" 200 OK
+INFO:     127.0.0.1:56663 - "POST /voice_features HTTP/1.1" 200 OK
+/Users/honmayuudai/MyHobby/Yudai/test/taiki_sotuken/.venv/lib/python3.10/site-packages/pyannote/audio/pipelines/speaker_diarization.py:662: UserWarning:
+The detected number of speakers (1) for ws_diarize_1766983274249 is outside
+the given bounds [2, 2]. This can happen if the
+given audio file is too short to contain 2 or more speakers.
+Try to lower the desired minimal number of speakers.
+
+  warnings.warn(
+INFO:     127.0.0.1:56663 - "POST /voice_features HTTP/1.1" 200 OK
+/Users/honmayuudai/MyHobby/Yudai/test/taiki_sotuken/.venv/lib/python3.10/site-packages/pyannote/audio/pipelines/speaker_diarization.py:662: UserWarning:
+The detected number of speakers (1) for ws_diarize_1766983277251 is outside
+the given bounds [2, 2]. This can happen if the
+given audio file is too short to contain 2 or more speakers.
+Try to lower the desired minimal number of speakers.
+
+  warnings.warn(
+INFO:     127.0.0.1:56663 - "POST /topics_incremental HTTP/1.1" 200 OK
+INFO:     127.0.0.1:56663 - "POST /voice_features HTTP/1.1" 200 OK
+/Users/honmayuudai/MyHobby/Yudai/test/taiki_sotuken/.venv/lib/python3.10/site-packages/pyannote/audio/pipelines/speaker_diarization.py:662: UserWarning:
+The detected number of speakers (1) for ws_diarize_1766983280253 is outside
+the given bounds [2, 2]. This can happen if the
+given audio file is too short to contain 2 or more speakers.
+Try to lower the desired minimal number of speakers.
+
+  warnings.warn(
+INFO:     127.0.0.1:56663 - "POST /voice_features HTTP/1.1" 200 OK
+/Users/honmayuudai/MyHobby/Yudai/test/taiki_sotuken/.venv/lib/python3.10/site-packages/numpy/core/fromnumeric.py:3504: RuntimeWarning: Mean of empty slice.
+  return _methods._mean(a, axis=axis, dtype=dtype,
+/Users/honmayuudai/MyHobby/Yudai/test/taiki_sotuken/.venv/lib/python3.10/site-packages/numpy/core/_methods.py:121: RuntimeWarning: invalid value encountered in divide
+  ret = um.true_divide(
+/Users/honmayuudai/MyHobby/Yudai/test/taiki_sotuken/.venv/lib/python3.10/site-packages/pyannote/audio/pipelines/speaker_diarization.py:662: UserWarning:
+The detected number of speakers (1) for ws_diarize_1766983283264 is outside
+the given bounds [2, 2]. This can happen if the
+given audio file is too short to contain 2 or more speakers.
+Try to lower the desired minimal number of speakers.
+
+  warnings.warn(
+INFO:     127.0.0.1:56663 - "POST /voice_features HTTP/1.1" 200 OK
+/Users/honmayuudai/MyHobby/Yudai/test/taiki_sotuken/.venv/lib/python3.10/site-packages/pyannote/audio/pipelines/speaker_diarization.py:662: UserWarning:
+The detected number of speakers (1) for ws_diarize_1766983286255 is outside
+the given bounds [2, 2]. This can happen if the
+given audio file is too short to contain 2 or more speakers.
+Try to lower the desired minimal number of speakers.
+
+  warnings.warn(
+INFO:     127.0.0.1:56663 - "POST /voice_features HTTP/1.1" 200 OK
+/Users/honmayuudai/MyHobby/Yudai/test/taiki_sotuken/.venv/lib/python3.10/site-packages/pyannote/audio/pipelines/speaker_diarization.py:662: UserWarning:
+The detected number of speakers (1) for ws_diarize_1766983289256 is outside
+the given bounds [2, 2]. This can happen if the
+given audio file is too short to contain 2 or more speakers.
+Try to lower the desired minimal number of speakers.
+
+  warnings.warn(
+INFO:     127.0.0.1:56663 - "POST /topics_incremental HTTP/1.1" 200 OK
+INFO:     127.0.0.1:56663 - "POST /voice_features HTTP/1.1" 200 OK
+/Users/honmayuudai/MyHobby/Yudai/test/taiki_sotuken/.venv/lib/python3.10/site-packages/pyannote/audio/pipelines/speaker_diarization.py:662: UserWarning:
+The detected number of speakers (1) for ws_diarize_1766983292261 is outside
+the given bounds [2, 2]. This can happen if the
+given audio file is too short to contain 2 or more speakers.
+Try to lower the desired minimal number of speakers.
+
+  warnings.warn(
+INFO:     127.0.0.1:56663 - "POST /voice_features HTTP/1.1" 200 OK
+/Users/honmayuudai/MyHobby/Yudai/test/taiki_sotuken/.venv/lib/python3.10/site-packages/pyannote/audio/pipelines/speaker_diarization.py:662: UserWarning:
+The detected number of speakers (1) for ws_diarize_1766983295260 is outside
+the given bounds [2, 2]. This can happen if the
+given audio file is too short to contain 2 or more speakers.
+Try to lower the desired minimal number of speakers.
+
+  warnings.warn(
+INFO:     127.0.0.1:56663 - "POST /voice_features HTTP/1.1" 200 OK
+/Users/honmayuudai/MyHobby/Yudai/test/taiki_sotuken/.venv/lib/python3.10/site-packages/pyannote/audio/pipelines/speaker_diarization.py:662: UserWarning:
+The detected number of speakers (1) for ws_diarize_1766983298262 is outside
+the given bounds [2, 2]. This can happen if the
+given audio file is too short to contain 2 or more speakers.
+Try to lower the desired minimal number of speakers.
+
+  warnings.warn(
+Yahoo keyphrase failed or no good topics, fallback to Sudachi: no good noun topics from Yahoo keyphrases
+INFO:     127.0.0.1:56663 - "POST /topics_incremental HTTP/1.1" 200 OK
+INFO:     127.0.0.1:56663 - "POST /voice_features HTTP/1.1" 200 OK
+/Users/honmayuudai/MyHobby/Yudai/test/taiki_sotuken/.venv/lib/python3.10/site-packages/pyannote/audio/pipelines/speaker_diarization.py:662: UserWarning:
+The detected number of speakers (1) for ws_diarize_1766983301265 is outside
+the given bounds [2, 2]. This can happen if the
+given audio file is too short to contain 2 or more speakers.
+Try to lower the desired minimal number of speakers.
+
+  warnings.warn(
+INFO:     127.0.0.1:56663 - "POST /voice_features HTTP/1.1" 200 OK
+/Users/honmayuudai/MyHobby/Yudai/test/taiki_sotuken/.venv/lib/python3.10/site-packages/pyannote/audio/pipelines/speaker_diarization.py:662: UserWarning:
+The detected number of speakers (1) for ws_diarize_1766983304267 is outside
+the given bounds [2, 2]. This can happen if the
+given audio file is too short to contain 2 or more speakers.
+Try to lower the desired minimal number of speakers.
+
+  warnings.warn(
+INFO:     127.0.0.1:56663 - "POST /voice_features HTTP/1.1" 200 OK
+INFO:     127.0.0.1:56663 - "POST /voice_features HTTP/1.1" 200 OK
+/Users/honmayuudai/MyHobby/Yudai/test/taiki_sotuken/.venv/lib/python3.10/site-packages/pyannote/audio/pipelines/speaker_diarization.py:662: UserWarning:
+The detected number of speakers (1) for ws_diarize_1766983310272 is outside
+the given bounds [2, 2]. This can happen if the
+given audio file is too short to contain 2 or more speakers.
+Try to lower the desired minimal number of speakers.
+
+  warnings.warn(
+INFO:     127.0.0.1:56663 - "POST /voice_features HTTP/1.1" 200 OK
+/Users/honmayuudai/MyHobby/Yudai/test/taiki_sotuken/.venv/lib/python3.10/site-packages/pyannote/audio/pipelines/speaker_diarization.py:662: UserWarning:
+The detected number of speakers (1) for ws_diarize_1766983313273 is outside
+the given bounds [2, 2]. This can happen if the
+given audio file is too short to contain 2 or more speakers.
+Try to lower the desired minimal number of speakers.
+
+  warnings.warn(
+INFO:     127.0.0.1:56663 - "POST /voice_features HTTP/1.1" 200 OK
+/Users/honmayuudai/MyHobby/Yudai/test/taiki_sotuken/.venv/lib/python3.10/site-packages/pyannote/audio/pipelines/speaker_diarization.py:662: UserWarning:
+The detected number of speakers (1) for ws_diarize_1766983316276 is outside
+the given bounds [2, 2]. This can happen if the
+given audio file is too short to contain 2 or more speakers.
+Try to lower the desired minimal number of speakers.
+
+  warnings.warn(
+INFO:     127.0.0.1:56663 - "POST /voice_features HTTP/1.1" 200 OK
+/Users/honmayuudai/MyHobby/Yudai/test/taiki_sotuken/.venv/lib/python3.10/site-packages/pyannote/audio/pipelines/speaker_diarization.py:662: UserWarning:
+The detected number of speakers (1) for ws_diarize_1766983319278 is outside
+the given bounds [2, 2]. This can happen if the
+given audio file is too short to contain 2 or more speakers.
+Try to lower the desired minimal number of speakers.
+
+  warnings.warn(
+Yahoo keyphrase failed or no good topics, fallback to Sudachi: no good noun topics from Yahoo keyphrases
+INFO:     127.0.0.1:56663 - "POST /topics_incremental HTTP/1.1" 200 OK
+INFO:     127.0.0.1:56663 - "POST /voice_features HTTP/1.1" 200 OK
+/Users/honmayuudai/MyHobby/Yudai/test/taiki_sotuken/.venv/lib/python3.10/site-packages/pyannote/audio/pipelines/speaker_diarization.py:662: UserWarning:
+The detected number of speakers (1) for ws_diarize_1766983322279 is outside
+the given bounds [2, 2]. This can happen if the
+given audio file is too short to contain 2 or more speakers.
+Try to lower the desired minimal number of speakers.
+
+  warnings.warn(
+INFO:     127.0.0.1:56663 - "POST /voice_features HTTP/1.1" 200 OK
+/Users/honmayuudai/MyHobby/Yudai/test/taiki_sotuken/.venv/lib/python3.10/site-packages/pyannote/audio/pipelines/speaker_diarization.py:662: UserWarning:
+The detected number of speakers (1) for ws_diarize_1766983325284 is outside
+the given bounds [2, 2]. This can happen if the
+given audio file is too short to contain 2 or more speakers.
+Try to lower the desired minimal number of speakers.
+
+  warnings.warn(
+INFO:     127.0.0.1:56663 - "POST /voice_features HTTP/1.1" 200 OK
+/Users/honmayuudai/MyHobby/Yudai/test/taiki_sotuken/.venv/lib/python3.10/site-packages/pyannote/audio/pipelines/speaker_diarization.py:662: UserWarning:
+The detected number of speakers (1) for ws_diarize_1766983328285 is outside
+the given bounds [2, 2]. This can happen if the
+given audio file is too short to contain 2 or more speakers.
+Try to lower the desired minimal number of speakers.
+
+  warnings.warn(
+INFO:     127.0.0.1:56663 - "POST /voice_features HTTP/1.1" 200 OK
+/Users/honmayuudai/MyHobby/Yudai/test/taiki_sotuken/.venv/lib/python3.10/site-packages/pyannote/audio/pipelines/speaker_diarization.py:662: UserWarning:
+The detected number of speakers (1) for ws_diarize_1766983331287 is outside
+the given bounds [2, 2]. This can happen if the
+given audio file is too short to contain 2 or more speakers.
+Try to lower the desired minimal number of speakers.
+
+  warnings.warn(
+INFO:     127.0.0.1:56663 - "POST /voice_features HTTP/1.1" 200 OK
+/Users/honmayuudai/MyHobby/Yudai/test/taiki_sotuken/.venv/lib/python3.10/site-packages/pyannote/audio/pipelines/speaker_diarization.py:662: UserWarning:
+The detected number of speakers (1) for ws_diarize_1766983334289 is outside
+the given bounds [2, 2]. This can happen if the
+given audio file is too short to contain 2 or more speakers.
+Try to lower the desired minimal number of speakers.
+
+  warnings.warn(
+INFO:     127.0.0.1:56663 - "POST /voice_features HTTP/1.1" 200 OK
+/Users/honmayuudai/MyHobby/Yudai/test/taiki_sotuken/.venv/lib/python3.10/site-packages/numpy/core/fromnumeric.py:3504: RuntimeWarning: Mean of empty slice.
+  return _methods._mean(a, axis=axis, dtype=dtype,
+/Users/honmayuudai/MyHobby/Yudai/test/taiki_sotuken/.venv/lib/python3.10/site-packages/numpy/core/_methods.py:121: RuntimeWarning: invalid value encountered in divide
+  ret = um.true_divide(
+/Users/honmayuudai/MyHobby/Yudai/test/taiki_sotuken/.venv/lib/python3.10/site-packages/pyannote/audio/pipelines/speaker_diarization.py:662: UserWarning:
+The detected number of speakers (1) for ws_diarize_1766983337291 is outside
+the given bounds [2, 2]. This can happen if the
+given audio file is too short to contain 2 or more speakers.
+Try to lower the desired minimal number of speakers.
+
+  warnings.warn(
+INFO:     127.0.0.1:56663 - "POST /voice_features HTTP/1.1" 200 OK
+/Users/honmayuudai/MyHobby/Yudai/test/taiki_sotuken/.venv/lib/python3.10/site-packages/pyannote/audio/pipelines/speaker_diarization.py:662: UserWarning:
+The detected number of speakers (1) for ws_diarize_1766983340294 is outside
+the given bounds [2, 2]. This can happen if the
+given audio file is too short to contain 2 or more speakers.
+Try to lower the desired minimal number of speakers.
+
+  warnings.warn(
+INFO:     127.0.0.1:56663 - "POST /voice_features HTTP/1.1" 200 OK
+/Users/honmayuudai/MyHobby/Yudai/test/taiki_sotuken/.venv/lib/python3.10/site-packages/pyannote/audio/pipelines/speaker_diarization.py:662: UserWarning:
+The detected number of speakers (1) for ws_diarize_1766983343296 is outside
+the given bounds [2, 2]. This can happen if the
+given audio file is too short to contain 2 or more speakers.
+Try to lower the desired minimal number of speakers.
+
+  warnings.warn(
+INFO:     127.0.0.1:56663 - "POST /voice_features HTTP/1.1" 200 OK
+/Users/honmayuudai/MyHobby/Yudai/test/taiki_sotuken/.venv/lib/python3.10/site-packages/pyannote/audio/pipelines/speaker_diarization.py:662: UserWarning:
+The detected number of speakers (1) for ws_diarize_1766983346297 is outside
+the given bounds [2, 2]. This can happen if the
+given audio file is too short to contain 2 or more speakers.
+Try to lower the desired minimal number of speakers.
+
+  warnings.warn(
+INFO:     127.0.0.1:56663 - "POST /voice_features HTTP/1.1" 200 OK
+/Users/honmayuudai/MyHobby/Yudai/test/taiki_sotuken/.venv/lib/python3.10/site-packages/pyannote/audio/pipelines/speaker_diarization.py:662: UserWarning:
+The detected number of speakers (1) for ws_diarize_1766983349301 is outside
+the given bounds [2, 2]. This can happen if the
+given audio file is too short to contain 2 or more speakers.
+Try to lower the desired minimal number of speakers.
+
+  warnings.warn(
+INFO:     127.0.0.1:56663 - "POST /voice_features HTTP/1.1" 200 OK
+INFO:     127.0.0.1:57216 - "POST /topics_incremental HTTP/1.1" 200 OK
+/Users/honmayuudai/MyHobby/Yudai/test/taiki_sotuken/.venv/lib/python3.10/site-packages/pyannote/audio/pipelines/speaker_diarization.py:662: UserWarning:
+The detected number of speakers (1) for ws_diarize_1766983352304 is outside
+the given bounds [2, 2]. This can happen if the
+given audio file is too short to contain 2 or more speakers.
+Try to lower the desired minimal number of speakers.
+
+  warnings.warn(
+INFO:     127.0.0.1:57216 - "POST /voice_features HTTP/1.1" 200 OK
+/Users/honmayuudai/MyHobby/Yudai/test/taiki_sotuken/.venv/lib/python3.10/site-packages/pyannote/audio/pipelines/speaker_diarization.py:662: UserWarning:
+The detected number of speakers (1) for ws_diarize_1766983355305 is outside
+the given bounds [2, 2]. This can happen if the
+given audio file is too short to contain 2 or more speakers.
+Try to lower the desired minimal number of speakers.
+
+  warnings.warn(
+INFO:     127.0.0.1:57216 - "POST /voice_features HTTP/1.1" 200 OK
+/Users/honmayuudai/MyHobby/Yudai/test/taiki_sotuken/.venv/lib/python3.10/site-packages/pyannote/audio/pipelines/speaker_diarization.py:662: UserWarning:
+The detected number of speakers (1) for ws_diarize_1766983358314 is outside
+the given bounds [2, 2]. This can happen if the
+given audio file is too short to contain 2 or more speakers.
+Try to lower the desired minimal number of speakers.
+
+  warnings.warn(
+INFO:     127.0.0.1:57216 - "POST /voice_features HTTP/1.1" 200 OK
+/Users/honmayuudai/MyHobby/Yudai/test/taiki_sotuken/.venv/lib/python3.10/site-packages/pyannote/audio/pipelines/speaker_diarization.py:662: UserWarning:
+The detected number of speakers (1) for ws_diarize_1766983361312 is outside
+the given bounds [2, 2]. This can happen if the
+given audio file is too short to contain 2 or more speakers.
+Try to lower the desired minimal number of speakers.
+
+  warnings.warn(
+INFO:     127.0.0.1:57216 - "POST /voice_features HTTP/1.1" 200 OK
+/Users/honmayuudai/MyHobby/Yudai/test/taiki_sotuken/.venv/lib/python3.10/site-packages/pyannote/audio/pipelines/speaker_diarization.py:662: UserWarning:
+The detected number of speakers (1) for ws_diarize_1766983364313 is outside
+the given bounds [2, 2]. This can happen if the
+given audio file is too short to contain 2 or more speakers.
+Try to lower the desired minimal number of speakers.
+
+  warnings.warn(
+INFO:     127.0.0.1:57216 - "POST /voice_features HTTP/1.1" 200 OK
+/Users/honmayuudai/MyHobby/Yudai/test/taiki_sotuken/.venv/lib/python3.10/site-packages/numpy/core/fromnumeric.py:3504: RuntimeWarning: Mean of empty slice.
+  return _methods._mean(a, axis=axis, dtype=dtype,
+/Users/honmayuudai/MyHobby/Yudai/test/taiki_sotuken/.venv/lib/python3.10/site-packages/numpy/core/_methods.py:121: RuntimeWarning: invalid value encountered in divide
+  ret = um.true_divide(
+/Users/honmayuudai/MyHobby/Yudai/test/taiki_sotuken/.venv/lib/python3.10/site-packages/pyannote/audio/pipelines/speaker_diarization.py:662: UserWarning:
+The detected number of speakers (1) for ws_diarize_1766983367315 is outside
+the given bounds [2, 2]. This can happen if the
+given audio file is too short to contain 2 or more speakers.
+Try to lower the desired minimal number of speakers.
+
+  warnings.warn(
+INFO:     127.0.0.1:57216 - "POST /voice_features HTTP/1.1" 200 OK
+/Users/honmayuudai/MyHobby/Yudai/test/taiki_sotuken/.venv/lib/python3.10/site-packages/pyannote/audio/pipelines/speaker_diarization.py:662: UserWarning:
+The detected number of speakers (1) for ws_diarize_1766983370318 is outside
+the given bounds [2, 2]. This can happen if the
+given audio file is too short to contain 2 or more speakers.
+Try to lower the desired minimal number of speakers.
+
+  warnings.warn(
+INFO:     127.0.0.1:57216 - "POST /voice_features HTTP/1.1" 200 OK
+/Users/honmayuudai/MyHobby/Yudai/test/taiki_sotuken/.venv/lib/python3.10/site-packages/pyannote/audio/pipelines/speaker_diarization.py:662: UserWarning:
+The detected number of speakers (1) for ws_diarize_1766983373321 is outside
+the given bounds [2, 2]. This can happen if the
+given audio file is too short to contain 2 or more speakers.
+Try to lower the desired minimal number of speakers.
+
+  warnings.warn(
+Yahoo keyphrase failed or no good topics, fallback to Sudachi: no good noun topics from Yahoo keyphrases
+INFO:     127.0.0.1:57216 - "POST /topics_incremental HTTP/1.1" 200 OK
+INFO:     127.0.0.1:57216 - "POST /voice_features HTTP/1.1" 200 OK
+/Users/honmayuudai/MyHobby/Yudai/test/taiki_sotuken/.venv/lib/python3.10/site-packages/pyannote/audio/pipelines/speaker_diarization.py:662: UserWarning:
+The detected number of speakers (1) for ws_diarize_1766983376324 is outside
+the given bounds [2, 2]. This can happen if the
+given audio file is too short to contain 2 or more speakers.
+Try to lower the desired minimal number of speakers.
+
+  warnings.warn(
+INFO:     127.0.0.1:57216 - "POST /voice_features HTTP/1.1" 200 OK
+/Users/honmayuudai/MyHobby/Yudai/test/taiki_sotuken/.venv/lib/python3.10/site-packages/pyannote/audio/pipelines/speaker_diarization.py:662: UserWarning:
+The detected number of speakers (1) for ws_diarize_1766983379331 is outside
+the given bounds [2, 2]. This can happen if the
+given audio file is too short to contain 2 or more speakers.
+Try to lower the desired minimal number of speakers.
+
+  warnings.warn(
+INFO:     127.0.0.1:57216 - "POST /voice_features HTTP/1.1" 200 OK
+/Users/honmayuudai/MyHobby/Yudai/test/taiki_sotuken/.venv/lib/python3.10/site-packages/numpy/core/fromnumeric.py:3504: RuntimeWarning: Mean of empty slice.
+  return _methods._mean(a, axis=axis, dtype=dtype,
+/Users/honmayuudai/MyHobby/Yudai/test/taiki_sotuken/.venv/lib/python3.10/site-packages/numpy/core/_methods.py:121: RuntimeWarning: invalid value encountered in divide
+  ret = um.true_divide(
+/Users/honmayuudai/MyHobby/Yudai/test/taiki_sotuken/.venv/lib/python3.10/site-packages/pyannote/audio/pipelines/speaker_diarization.py:662: UserWarning:
+The detected number of speakers (1) for ws_diarize_1766983382328 is outside
+the given bounds [2, 2]. This can happen if the
+given audio file is too short to contain 2 or more speakers.
+Try to lower the desired minimal number of speakers.
+
+  warnings.warn(
+INFO:     127.0.0.1:57216 - "POST /voice_features HTTP/1.1" 200 OK
+/Users/honmayuudai/MyHobby/Yudai/test/taiki_sotuken/.venv/lib/python3.10/site-packages/pyannote/audio/pipelines/speaker_diarization.py:662: UserWarning:
+The detected number of speakers (1) for ws_diarize_1766983385330 is outside
+the given bounds [2, 2]. This can happen if the
+given audio file is too short to contain 2 or more speakers.
+Try to lower the desired minimal number of speakers.
+
+  warnings.warn(
+INFO:     127.0.0.1:57216 - "POST /voice_features HTTP/1.1" 200 OK
+/Users/honmayuudai/MyHobby/Yudai/test/taiki_sotuken/.venv/lib/python3.10/site-packages/pyannote/audio/pipelines/speaker_diarization.py:662: UserWarning:
+The detected number of speakers (1) for ws_diarize_1766983388333 is outside
+the given bounds [2, 2]. This can happen if the
+given audio file is too short to contain 2 or more speakers.
+Try to lower the desired minimal number of speakers.
+
+  warnings.warn(
+INFO:     127.0.0.1:57216 - "POST /voice_features HTTP/1.1" 200 OK
+Yahoo keyphrase failed or no good topics, fallback to Sudachi: no good noun topics from Yahoo keyphrases
+INFO:     127.0.0.1:57421 - "POST /topics_incremental HTTP/1.1" 200 OK
+/Users/honmayuudai/MyHobby/Yudai/test/taiki_sotuken/.venv/lib/python3.10/site-packages/numpy/core/fromnumeric.py:3504: RuntimeWarning: Mean of empty slice.
+  return _methods._mean(a, axis=axis, dtype=dtype,
+/Users/honmayuudai/MyHobby/Yudai/test/taiki_sotuken/.venv/lib/python3.10/site-packages/numpy/core/_methods.py:121: RuntimeWarning: invalid value encountered in divide
+  ret = um.true_divide(
+/Users/honmayuudai/MyHobby/Yudai/test/taiki_sotuken/.venv/lib/python3.10/site-packages/pyannote/audio/pipelines/speaker_diarization.py:662: UserWarning:
+The detected number of speakers (1) for ws_diarize_1766983391364 is outside
+the given bounds [2, 2]. This can happen if the
+given audio file is too short to contain 2 or more speakers.
+Try to lower the desired minimal number of speakers.
+
+  warnings.warn(
+INFO:     127.0.0.1:57216 - "POST /voice_features HTTP/1.1" 200 OK
+/Users/honmayuudai/MyHobby/Yudai/test/taiki_sotuken/.venv/lib/python3.10/site-packages/numpy/core/fromnumeric.py:3504: RuntimeWarning: Mean of empty slice.
+  return _methods._mean(a, axis=axis, dtype=dtype,
+/Users/honmayuudai/MyHobby/Yudai/test/taiki_sotuken/.venv/lib/python3.10/site-packages/numpy/core/_methods.py:121: RuntimeWarning: invalid value encountered in divide
+  ret = um.true_divide(
+/Users/honmayuudai/MyHobby/Yudai/test/taiki_sotuken/.venv/lib/python3.10/site-packages/pyannote/audio/pipelines/speaker_diarization.py:662: UserWarning:
+The detected number of speakers (1) for ws_diarize_1766983394338 is outside
+the given bounds [2, 2]. This can happen if the
+given audio file is too short to contain 2 or more speakers.
+Try to lower the desired minimal number of speakers.
+
+  warnings.warn(
+INFO:     127.0.0.1:57216 - "POST /voice_features HTTP/1.1" 200 OK
+/Users/honmayuudai/MyHobby/Yudai/test/taiki_sotuken/.venv/lib/python3.10/site-packages/numpy/core/fromnumeric.py:3504: RuntimeWarning: Mean of empty slice.
+  return _methods._mean(a, axis=axis, dtype=dtype,
+/Users/honmayuudai/MyHobby/Yudai/test/taiki_sotuken/.venv/lib/python3.10/site-packages/numpy/core/_methods.py:121: RuntimeWarning: invalid value encountered in divide
+  ret = um.true_divide(
+/Users/honmayuudai/MyHobby/Yudai/test/taiki_sotuken/.venv/lib/python3.10/site-packages/pyannote/audio/pipelines/speaker_diarization.py:662: UserWarning:
+The detected number of speakers (1) for ws_diarize_1766983397339 is outside
+the given bounds [2, 2]. This can happen if the
+given audio file is too short to contain 2 or more speakers.
+Try to lower the desired minimal number of speakers.
+
+  warnings.warn(
+INFO:     connection closed
+Yahoo keyphrase failed or no good topics, fallback to Sudachi: no good noun topics from Yahoo keyphrases
+INFO:     127.0.0.1:57216 - "POST /topics_incremental HTTP/1.1" 200 OK

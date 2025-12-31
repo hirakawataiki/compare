@@ -1,0 +1,42 @@
+(.venv) ~/MyHobby/Yudai/test/taiki_sotuken % python -m uvicorn src.app.main:app --reload
+INFO:     Will watch for changes in these directories: ['/Users/honmayuudai/MyHobby/Yudai/test/taiki_sotuken']
+INFO:     Uvicorn running on http://127.0.0.1:8000 (Press CTRL+C to quit)
+INFO:     Started reloader process [51499] using WatchFiles
+[ConversationPipeline] UUDB load_para_file failed: .para file not found: C:\UUDB/var/C001/C001.para (OK: live voice only)
+INFO:     Started server process [51501]
+INFO:     Waiting for application startup.
+INFO:     Application startup complete.
+INFO:     127.0.0.1:65016 - "GET / HTTP/1.1" 200 OK
+INFO:     ('127.0.0.1', 65024) - "WebSocket /ws" [accepted]
+INFO:     connection open
+INFO:     ('127.0.0.1', 65033) - "WebSocket /ws_diarize" [accepted]
+INFO:     connection open
+INFO:     127.0.0.1:65017 - "POST /voice_features HTTP/1.1" 200 OK
+INFO:     127.0.0.1:65017 - "POST /voice_features HTTP/1.1" 200 OK
+[DIARIZE] ws file=tmp_audio/ws_diarize_1766984877013.wav offset=0.0 min=1 max=2
+/Users/honmayuudai/MyHobby/Yudai/test/taiki_sotuken/.venv/lib/python3.10/site-packages/speechbrain/utils/torch_audio_backend.py:57: UserWarning: torchaudio._backend.list_audio_backends has been deprecated. This deprecation is part of a large refactoring effort to transition TorchAudio into a maintenance phase. The decoding and encoding capabilities of PyTorch for both audio and video are being consolidated into TorchCodec. Please see https://github.com/pytorch/audio/issues/3902 for more information. It will be removed from the 2.9 release.
+  available_backends = torchaudio.list_audio_backends()
+Lightning automatically upgraded your loaded checkpoint from v1.5.4 to v2.6.0. To apply the upgrade to your files permanently, run `python -m lightning.pytorch.utilities.upgrade_checkpoint ../../../../.cache/huggingface/hub/models--pyannote--segmentation/snapshots/c4c8ceafcbb3a7a280c2d357aee9fbc9b0be7f9b/pytorch_model.bin`
+/Users/honmayuudai/MyHobby/Yudai/test/taiki_sotuken/.venv/lib/python3.10/site-packages/speechbrain/utils/autocast.py:188: FutureWarning: `torch.cuda.amp.custom_fwd(args...)` is deprecated. Please use `torch.amp.custom_fwd(args..., device_type='cuda')` instead.
+  wrapped_fwd = torch.cuda.amp.custom_fwd(fwd, cast_inputs=cast_inputs)
+INFO:     127.0.0.1:65017 - "POST /voice_features HTTP/1.1" 200 OK
+objc[51501]: Class AVFFrameReceiver is implemented in both /opt/homebrew/Cellar/ffmpeg/7.1.1_1/lib/libavdevice.61.3.100.dylib (0x13937c3a8) and /Users/honmayuudai/MyHobby/Yudai/test/taiki_sotuken/.venv/Lib/python3.10/site-packages/av/.dylibs/libavdevice.60.3.100.dylib (0x150df4760). This may cause spurious casting failures and mysterious crashes. One of the duplicates must be removed or renamed.
+objc[51501]: Class AVFAudioReceiver is implemented in both /opt/homebrew/Cellar/ffmpeg/7.1.1_1/lib/libavdevice.61.3.100.dylib (0x13937c3f8) and /Users/honmayuudai/MyHobby/Yudai/test/taiki_sotuken/.venv/Lib/python3.10/site-packages/av/.dylibs/libavdevice.60.3.100.dylib (0x150df47b0). This may cause spurious casting failures and mysterious crashes. One of the duplicates must be removed or renamed.
+INFO:     127.0.0.1:65075 - "POST /topics_incremental HTTP/1.1" 200 OK
+INFO:     127.0.0.1:65088 - "POST /voice_features HTTP/1.1" 200 OK
+INFO:     127.0.0.1:65105 - "POST /voice_features HTTP/1.1" 200 OK
+[VoiceEngagementRuntime] baseline fixed: pitch_var_mu=4067.577201, energy_var_mu=0.001540, rate_mu=2.167, pitch_mean_mu=148.31, energy_mean_mu=0.032562, voiced_mu=0.566
+INFO:     127.0.0.1:65105 - "POST /voice_features HTTP/1.1" 200 OK
+INFO:     127.0.0.1:65105 - "POST /voice_features HTTP/1.1" 200 OK
+INFO:     127.0.0.1:65105 - "POST /voice_features HTTP/1.1" 200 OK
+INFO:     127.0.0.1:65105 - "POST /voice_features HTTP/1.1" 200 OK
+INFO:     127.0.0.1:65105 - "POST /voice_features HTTP/1.1" 200 OK
+INFO:     127.0.0.1:65105 - "POST /voice_features HTTP/1.1" 200 OK
+INFO:     127.0.0.1:65105 - "POST /voice_features HTTP/1.1" 200 OK
+INFO:     127.0.0.1:65105 - "POST /topics_incremental HTTP/1.1" 200 OK
+INFO:     127.0.0.1:65105 - "POST /voice_features HTTP/1.1" 200 OK
+INFO:     127.0.0.1:65105 - "POST /voice_features HTTP/1.1" 200 OK
+INFO:     127.0.0.1:65105 - "POST /voice_features HTTP/1.1" 200 OK
+INFO:     connection closed
+Yahoo keyphrase failed or no good topics, fallback to Sudachi: no good noun topics from Yahoo keyphrases
+INFO:     127.0.0.1:65105 - "POST /topics_incremental HTTP/1.1" 200 OK
