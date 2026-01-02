@@ -3,7 +3,7 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width,initial-scale=1" />
-  <title>Conversation Support System (UI)</title>
+  <title>会話支援システム</title>
   <style>
     body { font-family: system-ui, -apple-system, "Segoe UI", Roboto, "Noto Sans JP", sans-serif; margin: 20px; background:#f6f7fb; }
     h1 { font-size: 22px; margin: 0 0 12px; }
@@ -17,11 +17,45 @@
     .card { background:#fff; border:1px solid #e3e5f0; border-radius: 14px; padding: 14px; box-shadow: 0 1px 8px rgba(0,0,0,.04); margin: 12px 0; }
     textarea { width: 100%; min-height: 110px; border-radius: 12px; border:1px solid #d9dbe6; padding: 10px; resize: vertical; }
     .topics { display:flex; gap: 8px; flex-wrap: wrap; }
+    .topicHeader { display:flex; gap:12px; flex-wrap:wrap; align-items:center; justify-content:space-between; }
+    .topicTitle { display:flex; gap:12px; align-items:baseline; flex-wrap:wrap; }
+    .engageLegend { display:flex; flex-direction:column; gap:6px; align-items:flex-end; min-width:200px; }
     .topicBtn { border-radius: 999px; border: 1px solid rgba(0,0,0,.08); padding: 8px 12px; cursor:pointer; }
     .small { font-size: 12px; color:#666; }
     .log { width:100%; min-height: 140px; border-radius: 12px; border:1px solid #d9dbe6; padding: 10px; background:#fbfbfe; white-space: pre-wrap; overflow:auto; }
     .seg { display:flex; gap:10px; flex-wrap: wrap; }
     .seg button { width: 44px; height: 36px; border-radius: 999px; }
+    .engageBar {
+      width: 100%;
+      max-width: 520px;
+      height: 44px;
+      border-radius: 14px;
+      border:1px solid #cfd4e5;
+      background: linear-gradient(90deg,
+        #000000 0%,
+        #0b1f4a 10%,
+        #0d5bd6 22%,
+        #0395ff 32%,
+        #05b5c6 42%,
+        #0ac27b 52%,
+        #7dd32a 62%,
+        #d6d700 72%,
+        #ff9a00 82%,
+        #ff3b0d 92%,
+        #ffffff 100%);
+      box-shadow: inset 0 1px 3px rgba(0,0,0,.16), 0 1px 4px rgba(0,0,0,.08);
+      cursor: pointer;
+      position: relative;
+      overflow: hidden;
+    }
+    .engageBar.mini { max-width: 240px; height: 28px; border-radius: 10px; }
+    .engageBar::after {
+      content: "";
+      position: absolute;
+      inset: 0;
+      background: linear-gradient(90deg, rgba(255,255,255,0.08) 0%, rgba(0,0,0,0.05) 100%);
+      pointer-events: none;
+    }
     .timelineWrap { display:flex; flex-direction:column; gap:8px; }
     .timeline { position: relative; width:100%; height: 18px; border-radius: 999px; border:1px solid #d9dbe6; background: #fff; display:flex; overflow:hidden; }
     .timelineSeg { height: 100%; }
@@ -34,13 +68,12 @@
   </style>
 </head>
 <body>
-  <h1>Conversation Support System (UI)</h1>
+  <h1>会話支援システム</h1>
 
   <div class="row">
     <button id="btnConnect">Connect</button>
     <button id="btnStart">音声認識スタート</button>
     <button id="btnStop" disabled>停止</button>
-    <button id="btnTick">Tick</button>
     <div class="pill">
       <span class="pillDot ng" id="wsDot"></span>
       <span id="wsStatus">closed</span>
@@ -48,39 +81,30 @@
   </div>
 
   <div class="card">
-    <div style="font-weight:700;margin-bottom:6px;">音声認識テキスト（Web Speech API）</div>
+    <div style="font-weight:700;margin-bottom:6px;">音声認識テキスト</div>
     <textarea id="speechArea" placeholder="ここに認識テキストが入ります"></textarea>
-    <div class="small" style="margin-top:6px;">話題抽出は「確定テキスト（final）」を差分で送ります（頻度も抑えます）。</div>
   </div>
 
   <div class="card">
-    <div style="display:flex; gap:16px; align-items:baseline; flex-wrap:wrap;">
-      <div style="font-weight:700;">① 話題（ストリーミング抽出）</div>
-      <div class="small">クリックで選択 → ②質問文</div>
+    <div class="topicHeader">
+      <div class="topicTitle">
+        <div style="font-weight:700;">話題</div>
+        <div class="small">クリックで選択 → 質問文を表示</div>
+      </div>
+      <div class="engageLegend">
+        <div class="small" style="text-align:right;">左端=低（青） / 右端=高（赤）</div>
+        <div class="engageBar mini" aria-hidden="true"></div>
+      </div>
     </div>
     <div class="topics" id="topics" style="margin-top:10px;"></div>
   </div>
 
   <div class="card">
     <div style="display:flex; gap:10px; align-items:baseline; flex-wrap:wrap;">
-      <div style="font-weight:700;">② 質問文</div>
-      <div class="small" id="currentTopic">（話題をクリックすると生成します）</div>
+      <div style="font-weight:700;">質問文</div>
+      <div class="small" id="currentTopic"></div>
     </div>
     <div id="questions" style="margin-top:10px;"></div>
-  </div>
-
-  <div class="card">
-    <div style="display:flex; gap:10px; align-items:baseline; flex-wrap:wrap;">
-      <div style="font-weight:700;">③ 盛り上がり度（話題ごとに色で強調）</div>
-    </div>
-    <div class="seg" style="margin-top:10px;">
-      <button id="btnHigh"  title="高">高</button>
-      <button id="btnMid"   title="中">中</button>
-      <button id="btnLow"   title="低">低</button>
-      <div class="small" style="align-self:center;">
-        ※ 話題が1つ追加された瞬間に、その区間の平均スコアを1回だけ自動割り当てします（色は更新しません）。
-      </div>
-    </div>
   </div>
 
   <div class="card">
@@ -94,12 +118,12 @@
   </div>
 
   <div class="card">
-    <div style="font-weight:700;margin-bottom:6px;">リアル音声（/voice_features）ログ（3秒ごと）</div>
+    <div style="font-weight:700;margin-bottom:6px;">リアル音声ログ</div>
     <div class="log" id="voiceLog"></div>
   </div>
 
   <div class="card">
-    <div style="font-weight:700;margin-bottom:6px;">話者分離ログ（/ws_diarize）</div>
+    <div style="font-weight:700;margin-bottom:6px;">話者分離ログ</div>
     <div class="log" id="diarizeLog"></div>
   </div>
 
@@ -125,13 +149,8 @@
   const btnConnect = document.getElementById('btnConnect');
   const btnStart = document.getElementById('btnStart');
   const btnStop = document.getElementById('btnStop');
-  const btnTick = document.getElementById('btnTick');
 
   const speechArea = document.getElementById('speechArea');
-
-  const btnHigh = document.getElementById('btnHigh');
-  const btnMid  = document.getElementById('btnMid');
-  const btnLow  = document.getElementById('btnLow');
 
   function log(msg) {
     logBox.textContent += (msg + "\n");
@@ -152,6 +171,10 @@
 
   // ===== WebSocket =====
   let ws = null;
+  let wsRetryTimer = null;
+  let wsPingTimer = null;
+  let wsLastCloseLog = { code: null, at: 0 };
+  let wsLastErrorLogAt = 0;
 
   function setWsState(isOpen) {
     wsDot.classList.toggle('ok', isOpen);
@@ -159,13 +182,55 @@
     wsStatus.textContent = isOpen ? 'open' : 'closed';
   }
 
-  function wsConnect() {
-    if (ws && (ws.readyState === 0 || ws.readyState === 1)) return;
+  function clearWsPing() {
+    if (wsPingTimer) { clearInterval(wsPingTimer); wsPingTimer = null; }
+  }
+
+  function scheduleWsReconnect() {
+    if (wsRetryTimer) return;
+    wsRetryTimer = setTimeout(() => {
+      wsRetryTimer = null;
+      wsConnect(true);
+    }, 2500);
+  }
+
+  function wsConnect(force=false) {
+    if (!force && ws && (ws.readyState === 0 || ws.readyState === 1)) return;
+    try { if (ws) ws.close(); } catch {}
+
     const url = (location.protocol === 'https:' ? 'wss://' : 'ws://') + location.host + '/ws';
     ws = new WebSocket(url);
-    ws.onopen = () => { setWsState(true); log("connected"); };
-    ws.onclose = () => { setWsState(false); log("connection closed"); };
-    ws.onerror = (e) => { setWsState(false); log("ws error"); };
+    ws.onopen = () => {
+      setWsState(true);
+      log("connected");
+      clearWsPing();
+      wsPingTimer = setInterval(() => {
+        try { ws?.send(JSON.stringify({ type: "ping" })); } catch {}
+      }, 10000);
+    };
+    ws.onclose = (ev) => {
+      setWsState(false);
+      clearWsPing();
+      const now = Date.now();
+      const shouldLog =
+        ev.code !== wsLastCloseLog.code ||
+        (now - wsLastCloseLog.at) > 8000;
+      if (shouldLog) {
+        log(`connection closed code=${ev.code} reason=${ev.reason || '(none)'} clean=${ev.wasClean}`);
+        wsLastCloseLog = { code: ev.code, at: now };
+      }
+      scheduleWsReconnect();
+    };
+    ws.onerror = () => {
+      setWsState(false);
+      clearWsPing();
+      const now = Date.now();
+      if ((now - wsLastErrorLogAt) > 5000) {
+        log("ws error");
+        wsLastErrorLogAt = now;
+      }
+      scheduleWsReconnect();
+    };
     ws.onmessage = (ev) => {
       try {
         const data = JSON.parse(ev.data);
@@ -194,12 +259,21 @@
     const s = clamp01(score);
     // stop0: blue, stop1: cyan, stop2: green, stop3: yellow, stop4: red
     const stops = [
+      { t: 0.00, c: { r: 0x00, g: 0x00, b: 0x00 } },
+      { t: 0.35, c: { r: 0x00, g: 0x00, b: 0xff } },
+      { t: 0.43, c: { r: 0x00, g: 0xff, b: 0xff } },
+      { t: 0.50, c: { r: 0x00, g: 0xff, b: 0x00 } },
+      { t: 0.57, c: { r: 0xff, g: 0xff, b: 0x00 } },
+      { t: 0.65, c: { r: 0xff, g: 0x00, b: 0x00 } },
+      { t: 1.00, c: { r: 0xff, g: 0xff, b: 0xff } },
+    ];
+    /*const stops = [   もともとの数値
       { t: 0.00, c: { r: 0x0b, g: 0x4b, b: 0xff } }, // blue
       { t: 0.25, c: { r: 0x12, g: 0xc0, b: 0xff } }, // cyan
       { t: 0.50, c: { r: 0x18, g: 0xe7, b: 0x6a } }, // green
       { t: 0.75, c: { r: 0xff, g: 0xd4, b: 0x00 } }, // yellow
       { t: 1.00, c: { r: 0xff, g: 0x33, b: 0x33 } }, // red
-    ];
+    ];*/
 
     let i = 0;
     while (i < stops.length - 1 && s > stops[i + 1].t) i++;
@@ -381,6 +455,7 @@
   // ===== Speech Recognition =====
   let recognition = null;
   let recognizing = false;
+  let recognitionStopRequested = false;
   let finalText = '';
   let partialText = '';
 
@@ -395,9 +470,41 @@
     r.continuous = true;
     r.interimResults = true;
 
-    r.onstart = () => { recognizing = true; log("speech recognition started"); };
-    r.onend = () => { recognizing = false; log("speech recognition ended"); };
-    r.onerror = (e) => { log("speech error: " + (e?.error || 'unknown')); };
+    // Web Speech API の状態ログ（停止原因の切り分け用）
+    r.onstart       = () => { recognizing = true; log("speech recognition started"); };
+    r.onend         = () => {
+      recognizing = false;
+      log("speech recognition ended (onend fired)");
+      // 無操作で切れた場合は自動再開（停止ボタンを押していないとき）
+      if (!recognitionStopRequested) {
+        setTimeout(() => {
+          try {
+            r.start();
+            log("speech recognition restarted after onend");
+          } catch (err) {
+            log("speech restart failed: " + err);
+          }
+        }, 300);
+      }
+    };
+    r.onerror       = (e) => {
+      const err = (e?.error || 'unknown');
+      log("speech error: " + err);
+      // network/no-speech などで止まったら自動再開を試みる
+      if (!recognitionStopRequested) {
+        setTimeout(() => {
+          try { r.stop(); } catch {}
+          try {
+            r.start();
+            log("speech recognition restarted after error");
+          } catch (err2) {
+            log("speech restart failed: " + err2);
+          }
+        }, 300);
+      }
+    };
+    r.onaudiostart  = () => log("audio capture start");
+    r.onspeechend   = () => log("speech end detected");
 
     r.onresult = (ev) => {
       let interim = '';
@@ -884,6 +991,7 @@
     // recognition
     if (!recognition) recognition = setupRecognition();
     if (recognition && !recognizing) {
+      recognitionStopRequested = false;
       finalText = '';
       partialText = '';
       speechArea.value = '';
@@ -909,6 +1017,7 @@
   };
 
   btnStop.onclick = async () => {
+    recognitionStopRequested = true;
     try { recognition && recognition.stop(); } catch {}
     btnStart.disabled = false;
     btnStop.disabled = true;
@@ -920,21 +1029,6 @@
 
     if (topicsTimer) { clearInterval(topicsTimer); topicsTimer = null; }
   };
-
-  btnTick.onclick = () => {
-    try {
-      if (ws && ws.readyState === 1) {
-        ws.send(JSON.stringify({ type: "tick" }));
-        log("WS send:tick");
-      } else {
-        log("WS not connected");
-      }
-    } catch {}
-  };
-
-  btnHigh.onclick = () => addScoreToCurrentTopic(0.85);
-  btnMid.onclick  = () => addScoreToCurrentTopic(0.50);
-  btnLow.onclick  = () => addScoreToCurrentTopic(0.15);
 
   // 初期状態
   setWsState(false);
