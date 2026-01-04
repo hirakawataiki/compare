@@ -22,3 +22,6 @@ Thumbs.db
 
 None/speechbrain/
 *.ckpt
+
+__pycache__/
+*.pyc
