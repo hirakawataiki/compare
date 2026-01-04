@@ -65,6 +65,11 @@
     .segmentList { display:flex; flex-direction:column; gap:6px; }
     .segmentRow { display:flex; gap:8px; align-items:center; font-size: 12px; color:#444; }
     .badge { padding:2px 6px; border-radius:6px; font-size:11px; border:1px solid rgba(0,0,0,.12); }
+    .toggleRow { display:flex; align-items:center; justify-content:space-between; gap:8px; }
+    .toggleBtn { border:none; background:none; cursor:pointer; font-size:14px; color:#444; }
+    .toggleBtn:focus { outline:none; }
+    .collapseContent { display:block; }
+    .collapseContent.is-collapsed { display:none; }
   </style>
 </head>
 <body>
@@ -108,28 +113,48 @@
   </div>
 
   <div class="card">
-    <div style="font-weight:700;">話者分析（交代回数・現在話者）</div>
-    <div class="row" style="margin-top:8px;">
-      <div class="pill">交替数(合計): <span id="turnTotal">0</span></div>
-      <div class="pill">このチャンク: <span id="turnChunk">0</span></div>
-      <div class="pill">現在話者: <span id="currentSpeaker">-</span></div>
+    <div class="toggleRow">
+      <div style="font-weight:700;">話者分析（交代回数・現在話者）</div>
+      <button class="toggleBtn" id="toggleMetricsBtn">▼</button>
     </div>
-    <div class="log" id="speakerMetricsLog"></div>
+    <div class="collapseContent" id="metricsSection">
+      <div class="row" style="margin-top:8px;">
+        <div class="pill">交替数(合計): <span id="turnTotal">0</span></div>
+        <div class="pill">このチャンク: <span id="turnChunk">0</span></div>
+        <div class="pill">現在話者: <span id="currentSpeaker">-</span></div>
+      </div>
+      <div class="log" id="speakerMetricsLog"></div>
+    </div>
   </div>
 
   <div class="card">
-    <div style="font-weight:700;margin-bottom:6px;">リアル音声ログ</div>
-    <div class="log" id="voiceLog"></div>
+    <div class="toggleRow">
+      <div style="font-weight:700;">リアル音声ログ</div>
+      <button class="toggleBtn" id="toggleVoiceBtn">▼</button>
+    </div>
+    <div class="collapseContent" id="voiceSection">
+      <div class="log" id="voiceLog"></div>
+    </div>
   </div>
 
   <div class="card">
-    <div style="font-weight:700;margin-bottom:6px;">話者分離ログ</div>
-    <div class="log" id="diarizeLog"></div>
+    <div class="toggleRow">
+      <div style="font-weight:700;">話者分離ログ</div>
+      <button class="toggleBtn" id="toggleDiarizeBtn">▼</button>
+    </div>
+    <div class="collapseContent" id="diarizeSection">
+      <div class="log" id="diarizeLog"></div>
+    </div>
   </div>
 
   <div class="card">
-    <div style="font-weight:700;margin-bottom:6px;">ログ</div>
-    <div class="log" id="log"></div>
+    <div class="toggleRow">
+      <div style="font-weight:700;">ログ</div>
+      <button class="toggleBtn" id="toggleLogBtn">▼</button>
+    </div>
+    <div class="collapseContent" id="logSection">
+      <div class="log" id="log"></div>
+    </div>
   </div>
 
 <script>
@@ -151,6 +176,14 @@
   const btnStop = document.getElementById('btnStop');
 
   const speechArea = document.getElementById('speechArea');
+  const toggleMetricsBtn = document.getElementById('toggleMetricsBtn');
+  const toggleVoiceBtn = document.getElementById('toggleVoiceBtn');
+  const toggleDiarizeBtn = document.getElementById('toggleDiarizeBtn');
+  const toggleLogBtn = document.getElementById('toggleLogBtn');
+  const metricsSection = document.getElementById('metricsSection');
+  const voiceSection = document.getElementById('voiceSection');
+  const diarizeSection = document.getElementById('diarizeSection');
+  const logSection = document.getElementById('logSection');
 
   function log(msg) {
     logBox.textContent += (msg + "\n");
@@ -755,7 +788,11 @@
     const url = (location.protocol === 'https:' ? 'wss://' : 'ws://') + location.host + '/ws_diarize';
     wsDiarize = new WebSocket(url);
     wsDiarize.onopen = () => logDiarize("[diarize] connected");
-    wsDiarize.onclose = () => logDiarize("[diarize] connection closed");
+    wsDiarize.onclose = () => {
+      logDiarize("[diarize] connection closed");
+      // 自動リトライ（2.5秒後）
+      setTimeout(() => wsDiarizeConnect(), 2500);
+    };
     wsDiarize.onerror = () => logDiarize("[diarize] error");
     wsDiarize.onmessage = (ev) => {
       try {
@@ -1032,6 +1069,19 @@
 
   // 初期状態
   setWsState(false);
+
+  function setupToggle(btn, section) {
+    if (!btn || !section) return;
+    btn.onclick = () => {
+      const collapsed = section.classList.toggle('is-collapsed');
+      btn.textContent = collapsed ? '▶' : '▼';
+    };
+  }
+
+  setupToggle(toggleMetricsBtn, metricsSection);
+  setupToggle(toggleVoiceBtn, voiceSection);
+  setupToggle(toggleDiarizeBtn, diarizeSection);
+  setupToggle(toggleLogBtn, logSection);
 })();
 </script>
 </body>
