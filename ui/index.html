@@ -5,7 +5,7 @@
   <meta name="viewport" content="width=device-width,initial-scale=1" />
   <title>会話支援システム</title>
   <style>
-    body { font-family: system-ui, -apple-system, "Segoe UI", Roboto, "Noto Sans JP", sans-serif; margin: 20px; background:#f6f7fb; }
+    body { font-family: system-ui, -apple-system, "Segoe UI", Roboto, "Noto Sans JP", sans-serif; margin: 20px; background: #ffe4c4; }
     h1 { font-size: 22px; margin: 0 0 12px; }
     .row { display:flex; gap:10px; flex-wrap: wrap; align-items:center; margin: 10px 0; }
     button { padding: 8px 12px; border-radius: 10px; border: 1px solid #d9dbe6; background:#fff; cursor:pointer; }
@@ -16,11 +16,11 @@
     .ng { background:#e74c3c; }
     .card { background:#fff; border:1px solid #e3e5f0; border-radius: 14px; padding: 14px; box-shadow: 0 1px 8px rgba(0,0,0,.04); margin: 12px 0; }
     textarea { width: 100%; min-height: 110px; border-radius: 12px; border:1px solid #d9dbe6; padding: 10px; resize: vertical; }
-    .topics { display:flex; gap: 8px; flex-wrap: wrap; }
+    .topics { display:flex; column-gap: 32px; row-gap: 24px; flex-wrap: wrap; }
     .topicHeader { display:flex; gap:12px; flex-wrap:wrap; align-items:center; justify-content:space-between; }
     .topicTitle { display:flex; gap:12px; align-items:baseline; flex-wrap:wrap; }
     .engageLegend { display:flex; flex-direction:column; gap:6px; align-items:flex-end; min-width:200px; }
-    .topicBtn { border-radius: 999px; border: 1px solid rgba(0,0,0,.08); padding: 8px 12px; cursor:pointer; }
+    .topicBtn { border-radius: 999px; border: 1px solid rgba(0,0,0,.08); padding: 14px 20px; font-size: 18px; cursor:pointer; color:#000; }
     .small { font-size: 12px; color:#666; }
     .log { width:100%; min-height: 140px; border-radius: 12px; border:1px solid #d9dbe6; padding: 10px; background:#fbfbfe; white-space: pre-wrap; overflow:auto; }
     .seg { display:flex; gap:10px; flex-wrap: wrap; }
@@ -76,7 +76,7 @@
   </style>
 </head>
 <body>
-  <h1>会話支援システム</h1>
+  <h1>実験</h1>
 
   <div class="row">
     <button id="btnConnect">Connect</button>
@@ -89,15 +89,15 @@
   </div>
 
   <div class="card">
-    <div style="font-weight:700;margin-bottom:6px;">音声認識テキスト</div>
+    <div style="font-weight:700;margin-bottom:10px;font-size:20px;">音声認識テキスト</div>
     <textarea id="speechArea" placeholder="ここに認識テキストが入ります"></textarea>
   </div>
 
   <div class="card">
     <div class="topicHeader">
       <div class="topicTitle">
-        <div style="font-weight:700;">話題</div>
-        <div class="small">クリックで選択 → 質問文を表示</div>
+        <div style="font-weight:700;font-size:20px;">話題</div>
+        <div class="small" style="font-size:14px;">クリックで選択 → 質問文を表示</div>
       </div>
       <div class="engageLegend">
         <div class="small" style="text-align:right;">左端=低（青） / 右端=高（赤）</div>
@@ -109,13 +109,13 @@
 
   <div class="card">
     <div style="display:flex; gap:10px; align-items:baseline; flex-wrap:wrap;">
-      <div style="font-weight:700;">質問文</div>
-      <div class="small" id="currentTopic"></div>
+      <div style="font-weight:700;font-size:20px;">質問文</div>
+      <div class="small" id="currentTopic" style="font-size:14px;">（話題をクリックすると生成します）</div>
     </div>
-    <div id="questions" style="margin-top:10px;"></div>
+    <div id="questions" style="margin-top:10px; font-size:25px;"></div>
   </div>
 
-  <button class="drawerBtn" id="logsToggleBtn" aria-expanded="false">&#9776; ログ</button>
+  <button class="drawerBtn" id="logsToggleBtn" aria-expanded="false">&#9776;</button>
   <div class="logDrawer is-collapsed" id="logsDrawer">
   <div class="card">
     <div class="toggleRow">
@@ -192,6 +192,8 @@
   const voiceSection = document.getElementById('voiceSection');
   const diarizeSection = document.getElementById('diarizeSection');
   const logSection = document.getElementById('logSection');
+  let turnTotalBase = 0;
+  let lastTurnTotal = 0;
 
   function log(msg) {
     logBox.textContent += (msg + "\n");
@@ -570,7 +572,7 @@
   let lastTopicCallAt = 0;
 
   const TOPIC_MIN_INTERVAL_MS = 8000;   // 以前より“ゆっくり”
-  const TOPIC_MIN_NEW_CHARS = 18;       // 差分が小さい時は送らない
+  const TOPIC_MIN_NEW_CHARS = 50;       // 差分が小さい時は送らない
 
   function getFinalText() {
     // finalText は内部保持、speechArea は表示用
@@ -586,7 +588,9 @@
 
     const delta = ft.slice(sentFinalLen).trim();
     if (!delta) return;
-    if (!force && delta.length < TOPIC_MIN_NEW_CHARS) return;
+    const periodCount = (delta.match(/。/g) || []).length;
+    const hasEnoughPeriod = periodCount >= 5; // 「。」が5回以上あれば送信
+    if (!force && delta.length < TOPIC_MIN_NEW_CHARS && !hasEnoughPeriod) return;
 
     lastTopicCallAt = now;
 
@@ -820,7 +824,13 @@
           if (metrics) {
             const tc = metrics.turn_changes_chunk ?? 0;
             const tt = metrics.turn_changes_total ?? 0;
-            if (turnTotalEl) turnTotalEl.textContent = String(tt);
+            // 累積表示：サーバ側のカウンタがリセットされたらベースを足し込む
+            if (tt < lastTurnTotal) {
+              turnTotalBase += lastTurnTotal;
+            }
+            lastTurnTotal = tt;
+            const totalCum = turnTotalBase + tt;
+            if (turnTotalEl) turnTotalEl.textContent = String(totalCum);
             if (turnChunkEl) turnChunkEl.textContent = String(tc);
             if (currentSpeakerEl) {
               const lastSeg = segs[segs.length - 1];
@@ -1042,6 +1052,10 @@
       speechArea.value = '';
       sentFinalLen = 0;
       lastTopicCallAt = 0;
+      turnTotalBase = 0;
+      lastTurnTotal = 0;
+      if (turnTotalEl) turnTotalEl.textContent = '0';
+      if (turnChunkEl) turnChunkEl.textContent = '0';
 
       clearTopics();
       document.getElementById('questions').innerHTML = '';
