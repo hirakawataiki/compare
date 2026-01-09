@@ -15,6 +15,7 @@ from types import SimpleNamespace
 import numpy as np
 
 from fastapi import FastAPI, WebSocket, UploadFile, File
+from fastapi.staticfiles import StaticFiles
 from fastapi.responses import HTMLResponse, JSONResponse
 from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel
@@ -35,6 +36,7 @@ from src.audio.features_audio import extract_features_for_segments, load_mono_wa
 import os
 
 app = FastAPI()
+app.mount("/assets", StaticFiles(directory="ui/assets"), name="assets")
 
 @app.post("/generate_questions", response_model=GenerateQuestionsResponse)
 def generate_questions(req: GenerateQuestionsRequest):

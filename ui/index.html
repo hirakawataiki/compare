@@ -20,7 +20,7 @@
     .topicHeader { display:flex; gap:12px; flex-wrap:wrap; align-items:center; justify-content:space-between; }
     .topicTitle { display:flex; gap:12px; align-items:baseline; flex-wrap:wrap; }
     .engageLegend { display:flex; flex-direction:column; gap:6px; align-items:flex-end; min-width:200px; }
-    .topicBtn { border-radius: 999px; border: 1px solid rgba(0,0,0,.08); padding: 14px 20px; font-size: 18px; cursor:pointer; color:#000; }
+    .topicBtn { border-radius: 999px; border: 1px solid rgba(0,0,0,.08); padding: 14px 20px; font-size: 18px; font-weight: 600; cursor:pointer; color:#000; }
     .small { font-size: 12px; color:#666; }
     .log { width:100%; min-height: 140px; border-radius: 12px; border:1px solid #d9dbe6; padding: 10px; background:#fbfbfe; white-space: pre-wrap; overflow:auto; }
     .seg { display:flex; gap:10px; flex-wrap: wrap; }
@@ -70,6 +70,10 @@
     .toggleBtn:focus { outline:none; }
     .collapseContent { display:block; }
     .collapseContent.is-collapsed { display:none; }
+    .card.is-collapsed { display:none; }
+    .speechToggleRow { display:flex; justify-content:flex-end; margin: 6px 0; }
+    .iconToggleBtn { border:none; background:none; cursor:pointer; padding:0; line-height:0; }
+    .iconToggleBtn img { width:28px; height:28px; display:block; }
     .drawerBtn { border:1px solid #d9dbe6; background:#fff; border-radius:10px; padding:8px 12px; display:inline-flex; align-items:center; gap:8px; box-shadow:0 1px 4px rgba(0,0,0,.08); cursor:pointer; }
     .logDrawer { display:block; margin-top:10px; }
     .logDrawer.is-collapsed { display:none; }
@@ -88,7 +92,12 @@
     </div>
   </div>
 
-  <div class="card">
+  <div class="speechToggleRow">
+    <button class="iconToggleBtn" id="toggleSpeechBtn" aria-expanded="true" title="Toggle speech text">
+      <img src="/assets/voice_toggle.png" alt="Toggle speech text" />
+    </button>
+  </div>
+  <div class="card" id="speechCard">
     <div style="font-weight:700;margin-bottom:10px;font-size:20px;">音声認識テキスト</div>
     <textarea id="speechArea" placeholder="ここに認識テキストが入ります"></textarea>
   </div>
@@ -188,6 +197,8 @@
   const toggleLogBtn = document.getElementById('toggleLogBtn');
   const logsToggleBtn = document.getElementById('logsToggleBtn');
   const logsDrawer = document.getElementById('logsDrawer');
+  const toggleSpeechBtn = document.getElementById('toggleSpeechBtn');
+  const speechCard = document.getElementById('speechCard');
   const metricsSection = document.getElementById('metricsSection');
   const voiceSection = document.getElementById('voiceSection');
   const diarizeSection = document.getElementById('diarizeSection');
@@ -296,6 +307,23 @@
     const toHex = (x) => Math.round(x).toString(16).padStart(2, '0');
     return `#${toHex(r)}${toHex(g)}${toHex(b)}`;
   }
+  function hexToRgb(hex) {
+    if (!hex) return null;
+    const m = String(hex).trim().match(/^#?([a-fA-F0-9]{6})$/);
+    if (!m) return null;
+    const v = m[1];
+    return {
+      r: parseInt(v.slice(0, 2), 16),
+      g: parseInt(v.slice(2, 4), 16),
+      b: parseInt(v.slice(4, 6), 16),
+    };
+  }
+  function getReadableTextColor(bgHex) {
+    const c = hexToRgb(bgHex);
+    if (!c) return '#000';
+    const luminance = (0.2126 * c.r + 0.7152 * c.g + 0.0722 * c.b) / 255;
+    return luminance < 0.6 ? '#fff' : '#000';
+  }
   function getTopicColorFromScore(score) {
     // score 0..1: Low=deep blue -> cyan -> green -> yellow -> High=red (写真のようなグラデ)
     if (!isFinite(score)) return '#e9ecf7'; // neutral default
@@ -346,7 +374,9 @@
     const b = document.createElement('button');
     b.className = 'topicBtn';
     b.textContent = topic;
-    b.style.background = getTopicColorFromScore(scoreHint);
+    const bg = getTopicColorFromScore(scoreHint);
+    b.style.background = bg;
+    b.style.color = getReadableTextColor(bg);
     b.onclick = () => showQuestions(topic);
     box.appendChild(b);
 
@@ -373,7 +403,9 @@
     state.scores.push(score);
     const sum = state.scores.reduce((a, c) => a + c, 0);
     state.avg = sum / state.scores.length;
-    state.element.style.background = getTopicColorFromScore(state.avg);
+    const bg = getTopicColorFromScore(state.avg);
+    state.element.style.background = bg;
+    state.element.style.color = getReadableTextColor(bg);
   }
 
   // topics から「新しい話題を 1 個だけ」採用（既出はスキップ）
@@ -1099,6 +1131,14 @@
     };
   }
 
+  function setupIconToggle(btn, section) {
+    if (!btn || !section) return;
+    btn.onclick = () => {
+      const collapsed = section.classList.toggle('is-collapsed');
+      btn.setAttribute('aria-expanded', collapsed ? 'false' : 'true');
+    };
+  }
+
   function setupToggle(btn, section) {
     if (!btn || !section) return;
     btn.onclick = () => {
@@ -1107,6 +1147,7 @@
     };
   }
 
+  setupIconToggle(toggleSpeechBtn, speechCard);
   setupToggle(toggleMetricsBtn, metricsSection);
   setupToggle(toggleVoiceBtn, voiceSection);
   setupToggle(toggleDiarizeBtn, diarizeSection);
