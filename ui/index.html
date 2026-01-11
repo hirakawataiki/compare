@@ -19,43 +19,11 @@
     .topics { display:flex; column-gap: 32px; row-gap: 24px; flex-wrap: wrap; }
     .topicHeader { display:flex; gap:12px; flex-wrap:wrap; align-items:center; justify-content:space-between; }
     .topicTitle { display:flex; gap:12px; align-items:baseline; flex-wrap:wrap; }
-    .engageLegend { display:flex; flex-direction:column; gap:6px; align-items:flex-end; min-width:200px; }
     .topicBtn { border-radius: 999px; border: 1px solid rgba(0,0,0,.08); padding: 14px 20px; font-size: 18px; font-weight: 600; cursor:pointer; color:#000; }
     .small { font-size: 12px; color:#666; }
     .log { width:100%; min-height: 140px; border-radius: 12px; border:1px solid #d9dbe6; padding: 10px; background:#fbfbfe; white-space: pre-wrap; overflow:auto; }
     .seg { display:flex; gap:10px; flex-wrap: wrap; }
     .seg button { width: 44px; height: 36px; border-radius: 999px; }
-    .engageBar {
-      width: 100%;
-      max-width: 520px;
-      height: 44px;
-      border-radius: 14px;
-      border:1px solid #cfd4e5;
-      background: linear-gradient(90deg,
-        #000000 0%,
-        #0b1f4a 10%,
-        #0d5bd6 22%,
-        #0395ff 32%,
-        #05b5c6 42%,
-        #0ac27b 52%,
-        #7dd32a 62%,
-        #d6d700 72%,
-        #ff9a00 82%,
-        #ff3b0d 92%,
-        #ffffff 100%);
-      box-shadow: inset 0 1px 3px rgba(0,0,0,.16), 0 1px 4px rgba(0,0,0,.08);
-      cursor: pointer;
-      position: relative;
-      overflow: hidden;
-    }
-    .engageBar.mini { max-width: 240px; height: 28px; border-radius: 10px; }
-    .engageBar::after {
-      content: "";
-      position: absolute;
-      inset: 0;
-      background: linear-gradient(90deg, rgba(255,255,255,0.08) 0%, rgba(0,0,0,0.05) 100%);
-      pointer-events: none;
-    }
     .timelineWrap { display:flex; flex-direction:column; gap:8px; }
     .timeline { position: relative; width:100%; height: 18px; border-radius: 999px; border:1px solid #d9dbe6; background: #fff; display:flex; overflow:hidden; }
     .timelineSeg { height: 100%; }
@@ -107,10 +75,6 @@
       <div class="topicTitle">
         <div style="font-weight:700;font-size:20px;">話題</div>
         <div class="small" style="font-size:14px;">クリックで選択 → 質問文を表示</div>
-      </div>
-      <div class="engageLegend">
-        <div class="small" style="text-align:right;">左端=低（青） / 右端=高（赤）</div>
-        <div class="engageBar mini" aria-hidden="true"></div>
       </div>
     </div>
     <div class="topics" id="topics" style="margin-top:10px;"></div>

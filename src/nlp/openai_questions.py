@@ -212,7 +212,7 @@ def generate_questions_for_topic(topic: str, context_text: str, model: Optional[
         resp = client.responses.create(
             model=model,
             input=prompt,
-            max_output_tokens=2000,
+            max_output_tokens=800,
         )
 
         raw_text = ""
