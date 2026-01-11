@@ -9,7 +9,6 @@ import requests
 
 from .nlp_ja import extract_keywords as extract_keywords_sudachi, analyze as analyze_ja
 from src.core.config import LLM_API_BASE, LLM_API_KEY, LLM_MODEL
-from src.core.safety import filter_questions
 from .yahoo_keyphrase import extract_keyphrases_yahoo, YahooKeyphraseError
 
 logger = logging.getLogger(__name__)
@@ -19,7 +18,7 @@ logger = logging.getLogger(__name__)
 # ==========================================================
 
 SYSTEM = """
-あなたは初対面に近い二者の会話を、長期的な関係構築の観点から支援するアシスタントです。
+あなたは初対面に近い二者の会話を支援するアシスタントです。
 
 出力は必ず次の JSON スキーマで返してください（日本語、UTF-8）:
 
@@ -38,7 +37,6 @@ SYSTEM = """
 }
 
 制約:
-- センシティブな話題（政治・宗教・収入・健康・恋愛・個人特定など）は避けるか、マイルドな聞き方に言い換える。
 - 相手を詰問したり、評価・ジャッジするような聞き方は避ける。
 - 相手のペースや安心感を尊重し、Yes/No で答えられるライトな質問から、様子を見て少しずつ深める。
 - 学生同士や若い社会人が初対面〜数回目の雑談で使うことを想定した口調にする。
@@ -54,8 +52,6 @@ def build_user_prompt(
     prefs = prefs or {}
     goal = (prefs.get("goal") or "").strip() or "初対面から自然に雑談を広げ、次回も話しやすい関係を作る"
     style = (prefs.get("style") or "").strip() or "丁寧で配慮あるカジュアル"
-    avoid = (prefs.get("avoid") or "").strip() or "政治, 宗教, 収入, 健康, 恋愛, 個人特定"
-
     topics_str = ", ".join(topics) if topics else "（まだ話題候補は抽出されていません）"
 
     return f"""
@@ -70,9 +66,6 @@ def build_user_prompt(
 
 【会話のトーン】
 {style}
-
-【避けたい話題・配慮したい点】
-{avoid}
 
 上の情報を踏まえて、それぞれの話題ごとに shallow / medium / deep の3段階の質問案を作成してください。
 出力は指定の JSON スキーマのみで返してください。
@@ -147,20 +140,10 @@ def _build_mock_questions_for_topics(topics: List[str]) -> Dict[str, Any]:
 # 1. Yahoo キーフレーズ → 「話題候補の名詞」に落とし込むヘルパー
 # ==========================================================
 
-# 「名詞だけど話題にしたくないもの」をここで列挙
-_TOPIC_STOPWORDS = set("""
-先 こと 場合 部分 所 ところ 以上 以下 時 今 今日 明日 今夜 以前 以降
-前後 人たち 自分 こちら あちら どちら みんな 私 僕 俺
-""".split())
-
 def _extract_noun_candidates_from_phrase(phrase: str) -> List[str]:
     """
-    Yahooのキーフレーズ（例: 「展示会の準備を進める」）から
-    「話題にしたい名詞」の候補だけを抽出する。
-
-    - Sudachiで形態素解析
-    - 品詞が「名詞」のものだけ採用
-    - 1文字だけ/ASCIIのみ/ストップワードは除外
+    Yahooのキーフレーズから候補語を抽出する。
+    候補制限は行わず、そのまま返す。
     """
     candidates: List[str] = []
 
@@ -168,21 +151,8 @@ def _extract_noun_candidates_from_phrase(phrase: str) -> List[str]:
         # lemma が空のときは surface を使う
         base = lemma or surface
 
-        # 品詞の先頭が「名詞」以外はスキップ
-        if not pos or pos[0] != "名詞":
-            continue
-
-        # 1文字だけのもの・ASCIIだけのものは除外
-        if len(base) < 2:
-            continue
-        if base.isascii():
-            continue
-
-        # トピック用のストップワードは除外
-        if base in _TOPIC_STOPWORDS:
-            continue
-
-        candidates.append(base)
+        if base:
+            candidates.append(base)
 
     return candidates
 
@@ -196,8 +166,8 @@ def extract_topics(input_text: str, topk: int = 8) -> List[str]:
 
     優先順位:
       1. LINEヤフー キーフレーズ抽出API
-         → Sudachi で形態素解析して「名詞」に絞り込む
-         → 名詞ごとにスコアを集約して上位 topk 件を返す
+         → Sudachi で形態素解析して候補語を抽出
+         → 候補語ごとにスコアを集約して上位 topk 件を返す
       2. Sudachiベースのローカル抽出（フォールバック）
     """
     input_text = (input_text or "").strip()
@@ -208,28 +178,28 @@ def extract_topics(input_text: str, topk: int = 8) -> List[str]:
     # 1) まず Yahoo API を試す
     # ------------------------------
     try:
-        # 少し多めに候補をもらってからフィルタする
+        # 少し多めに候補をもらってから集約する
         phrases = extract_keyphrases_yahoo(input_text, max_phrases=32)
         # phrases: List[Tuple[str, int]] = [(text, score), ...]
 
         topic_scores: Dict[str, float] = {}
 
         for text_, score_ in phrases:
-            # そのフレーズの中から「話題にしたい名詞」だけ抜き出す
-            nouns = _extract_noun_candidates_from_phrase(text_)
-            if not nouns:
+            # そのフレーズの中から候補語を抜き出す
+            candidates = _extract_noun_candidates_from_phrase(text_)
+            if not candidates:
                 continue
 
-            # いまはシンプルに「一番長い名詞」をそのフレーズの代表にする
-            head = max(nouns, key=len)
+            # いまはシンプルに「一番長い語」をそのフレーズの代表にする
+            head = max(candidates, key=len)
 
-            # 同じ名詞が複数フレーズに出てきた場合は、スコアの最大値を採用
+            # 同じ語が複数フレーズに出てきた場合は、スコアの最大値を採用
             prev = topic_scores.get(head, 0.0)
             topic_scores[head] = max(prev, float(score_))
 
         # Yahoo からまともな話題が取れなかった場合は Sudachi にフォールバック
         if not topic_scores:
-            raise ValueError("no good noun topics from Yahoo keyphrases")
+            raise ValueError("no good topics from Yahoo keyphrases")
 
         # スコアの高い順に並べて topk 個だけ返す
         sorted_topics = sorted(topic_scores.items(), key=lambda x: x[1], reverse=True)
@@ -239,7 +209,7 @@ def extract_topics(input_text: str, topk: int = 8) -> List[str]:
         return topics
 
     except (YahooKeyphraseError, Exception) as e:
-        # Yahooのエラー or 名詞が全く取れなかった場合
+        # Yahooのエラー or 候補が全く取れなかった場合
         logger.warning("Yahoo keyphrase failed or no good topics, fallback to Sudachi: %s", e)
 
     # ------------------------------
@@ -279,11 +249,9 @@ def run_text_flow(
     else:
         raw = _call_llm(SYSTEM, user, timeout=timeout_sec)
 
-    # 4) NG ワードフィルタを適用
-    safe = filter_questions(raw)
-
     # 念のため topics を上書きしておく（LLM 側で微変更された場合でも UI と揃う）
-    safe["topics"] = topics
+    if isinstance(raw, dict):
+        raw["topics"] = topics
 
-    # フロントが使いやすいように、「生の結果」と「フィルタ後の結果」をセットで返す
-    return {"topics": topics, "llm_raw": raw, "result": safe}
+    # フロントが使いやすいように、「生の結果」と「結果」をセットで返す
+    return {"topics": topics, "llm_raw": raw, "result": raw}

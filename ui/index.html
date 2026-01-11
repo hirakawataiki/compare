@@ -210,6 +210,16 @@
     logBox.textContent += (msg + "\n");
     logBox.scrollTop = logBox.scrollHeight;
   }
+  function logTopic(msg) {
+    log(`[topic] ${msg}`);
+  }
+  function logTopicFinal(state, reason) {
+    if (!state || state.finalized) return;
+    state.finalized = true;
+    const avg = isFinite(state.avg) ? state.avg.toFixed(3) : "NaN";
+    const suffix = reason ? ` (${reason})` : "";
+    logTopic(`final topic="${state.topic}" avg=${avg}${suffix}`);
+  }
   function logVoice(msg) {
     voiceLogBox.textContent += (msg + "\n");
     voiceLogBox.scrollTop = voiceLogBox.scrollHeight;
@@ -300,6 +310,7 @@
   const topicStates = []; // {topic, scores[], avg, element}
   let lastResult = null;
   let lastVoiceScore = NaN;
+  const FIXED_TOPIC_COLOR = '#00ff00'; // score=0.5 color
 
   function clamp01(x) { return Math.max(0, Math.min(1, x)); }
   function lerp(a, b, t) { return a + (b - a) * t; }
@@ -374,7 +385,7 @@
     const b = document.createElement('button');
     b.className = 'topicBtn';
     b.textContent = topic;
-    const bg = getTopicColorFromScore(scoreHint);
+    const bg = FIXED_TOPIC_COLOR;
     b.style.background = bg;
     b.style.color = getReadableTextColor(bg);
     b.onclick = () => showQuestions(topic);
@@ -385,6 +396,7 @@
       scores: [],
       avg: (isFinite(scoreHint) ? scoreHint : NaN),
       element: b,
+      finalized: false,
     });
   }
 
@@ -403,9 +415,6 @@
     state.scores.push(score);
     const sum = state.scores.reduce((a, c) => a + c, 0);
     state.avg = sum / state.scores.length;
-    const bg = getTopicColorFromScore(state.avg);
-    state.element.style.background = bg;
-    state.element.style.color = getReadableTextColor(bg);
   }
 
   // topics から「新しい話題を 1 個だけ」採用（既出はスキップ）
@@ -433,6 +442,9 @@
       selectedScore = lastVoiceScore;
     }
 
+    if (topicStates.length) {
+      logTopicFinal(topicStates[topicStates.length - 1], "switch");
+    }
     seenTopics.add(selected);
     addTopicBadge(selected, selectedScore);
   }
@@ -1119,6 +1131,11 @@
     await postTopicsIncrementalDelta(true);
 
     if (topicsTimer) { clearInterval(topicsTimer); topicsTimer = null; }
+    if (topicStates.length) {
+      for (const state of topicStates) {
+        logTopicFinal(state, "stop");
+      }
+    }
   };
 
   // 初期状態

@@ -9,8 +9,6 @@ from typing import List, Optional, Dict, Any
 from pydantic import BaseModel, Field
 from openai import OpenAI
 
-# 既存の安全フィルタ（あなたのプロジェクトにある想定）
-from src.core.safety import HARD_NG_KEYWORDS, SOFT_NG_KEYWORDS, RECOMMENDED_DIRECTIONS, filter_questions
 
 RAW_NOTE_MAX_CHARS = 2000  # 長すぎるとDevToolsが見づらいので上限
 
@@ -58,11 +56,7 @@ def _build_prompt(topic: str, context_text: str) -> str:
     目的：
       - 「レベル分け無し」で質問を3つだけ生成
       - 余計な出力をさせない（速度＆安定性）
-      - safety.py のフィルタに必ず通す前提なので、ここでは“生成”を最短で安定させる
     """
-    hard_ng = " / ".join(HARD_NG_KEYWORDS)
-    soft_ng = " / ".join(SOFT_NG_KEYWORDS)
-    dirs = " / ".join(RECOMMENDED_DIRECTIONS)
 
     # 遅延とコストを抑えるため、末尾中心に短めで渡す
     ctx = (context_text or "").strip()
@@ -77,14 +71,6 @@ def _build_prompt(topic: str, context_text: str) -> str:
 
 会話の直近文脈（参考。無視してもよい）:
 {ctx if ctx else "（なし）"}
-
-安全ルール（絶対遵守）:
-- 個人情報を特定する質問は禁止（住所/本名/学校名/連絡先/勤務先など）
-- センシティブ属性を直接聞かない（病歴、宗教、政治、性的指向、差別につながる内容など）
-- 露骨・攻撃的・詰問口調は禁止
-- 次のNGワードを含めない（強）: {hard_ng}
-- 次のNGワードはできるだけ避ける（弱）: {soft_ng}
-- 推奨の方向性: {dirs}
 
 出力条件:
 - 日本語
@@ -211,7 +197,7 @@ def _normalize_questions_payload(raw_any: Any, topic: str) -> tuple[Dict[str, An
 def generate_questions_for_topic(topic: str, context_text: str, model: Optional[str] = None) -> GenerateQuestionsResponse:
     """
     FastAPI から呼ばれる想定。
-    - OpenAIに投げる → JSON抽出 → safetyフィルタ → UI互換のQuestionsBlockへ整形
+    - OpenAIに投げる → JSON抽出 → UI互換のQuestionsBlockへ整形
     """
     model = (model or os.getenv("LLM_MODEL") or "gpt-5-mini").strip()
 
@@ -272,14 +258,10 @@ def generate_questions_for_topic(topic: str, context_text: str, model: Optional[
             ),
         )
 
-        # 既存の safety.py のフィルタに通す（ここが最重要の安全弁）
-    cleaned = filter_questions(raw_obj)
+    cleaned = raw_obj if isinstance(raw_obj, dict) else {}
 
-    safe = bool(cleaned.get("safe", True))
-    questions = cleaned.get("questions", {"shallow": [], "medium": [], "deep": []})
-
-    # notes を合成（safetyのnotes + 変換メモ）
-    notes = cleaned.get("notes", "")
+    # notes を合成（rawのnotes + 変換メモ）
+    notes = cleaned.get("notes", "") if isinstance(cleaned, dict) else ""
     if local_notes:
         notes = (notes + " / " + local_notes).strip(" /")
 
@@ -332,7 +314,7 @@ def generate_questions_for_topic(topic: str, context_text: str, model: Optional[
             merged.append(qq)
     merged = merged[:3]
 
-    # もし全部消えた（抽出失敗 / safetyで全削除）なら、安全な定型を返す
+    # もし全部消えた（抽出失敗）なら、定型を返す
     if not merged:
         merged = [
             f"「{topic_key}」について、最近いちばん印象に残ったことは？",
@@ -347,7 +329,7 @@ def generate_questions_for_topic(topic: str, context_text: str, model: Optional[
     questions_block = QuestionsBlock(shallow=merged, medium=[], deep=[])
 
     safe_flag = bool(cleaned.get("safe", True)) if isinstance(cleaned, dict) else True
-    notes = (cleaned.get("notes", "") if isinstance(cleaned, dict) else "").strip()
+    notes = notes.strip()
 
     # 「配列が返ってきたので shallow にマップした」などの注釈があれば notes に追記
     try:
